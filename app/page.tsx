@@ -2,7 +2,7 @@ import Link from "next/link";
 import {ProgramFinder} from "@/components/program-finder";
 import {ProgramCard} from "@/components/program-card";
 import {SectionHeading} from "@/components/section-heading";
-import {programs} from "@/lib/demo-data";
+import {getPrograms} from "@/lib/data/programs";
 
 const roles=[
  ["نوجوان و جوان","برنامه مناسب سن و علاقه‌ات را پیدا کن و مسیرت را ادامه بده.","/programs"],
@@ -17,7 +17,8 @@ const pathway=[
  ["۰۴","شبکه","به مربی‌ها، گروه‌ها و فرصت‌های فعالیت اجتماعی وصل می‌شوی."]
 ];
 
-export default function HomePage(){
+export default async function HomePage(){
+ const programs=await getPrograms();
  return <main>
   <section className="hero"><div className="container hero-grid"><div className="hero-copy">
    <span className="eyebrow">پلتفرم جامع جوانان آستان قدس رضوی</span>

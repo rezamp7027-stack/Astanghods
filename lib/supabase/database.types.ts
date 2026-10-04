@@ -97,6 +97,12 @@ export type Database = {
           province_id?: string | null; city?: string | null; capacity?: number | null; is_public?: boolean;
           created_at?: string; updated_at?: string;
         };
+        Relationships: [{ foreignKeyName: "events_program_id_fkey"; columns: ["program_id"]; isOneToOne: false; referencedRelation: "programs"; referencedColumns: ["id"] }];
+      };
+      content: {
+        Row: { id: string; title: string; slug: string; summary: string | null; body: Json; content_type: string; status: "draft" | "published" | "archived"; published_at: string | null; author_id: string | null; created_at: string; updated_at: string };
+        Insert: { id?: string; title: string; slug: string; summary?: string | null; body?: Json; content_type?: string; status?: "draft" | "published" | "archived"; published_at?: string | null; author_id?: string | null; created_at?: string; updated_at?: string };
+        Update: { id?: string; title?: string; slug?: string; summary?: string | null; body?: Json; content_type?: string; status?: "draft" | "published" | "archived"; published_at?: string | null; author_id?: string | null; created_at?: string; updated_at?: string };
         Relationships: [];
       };
       registrations: {

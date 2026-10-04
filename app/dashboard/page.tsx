@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { LogoutButton } from "@/components/logout-button";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,8 @@ export default async function DashboardPage() {
               <Link href="/dashboard">نمای کلی</Link>
               <Link href="/dashboard/profile">پروفایل</Link>
               <Link href="/programs">برنامه‌ها</Link>
+              <Link href="/events">رویدادها</Link>
+              <LogoutButton />
             </div>
           </aside>
           <section className="dashboard-main">
@@ -46,6 +49,11 @@ export default async function DashboardPage() {
               <span className="eyebrow">مسیر من</span>
               <h1 style={{fontSize:38}}>خوش آمدی، {displayName}</h1>
               <p className="lead" style={{fontSize:16}}>ثبت‌نام‌ها، دوره‌ها و فعالیت‌های آینده‌ات را از همین‌جا دنبال کن.</p>
+              {!profile?.onboarding_completed && (
+                <div className="notice" style={{marginTop:18}}>
+                  برای شخصی‌سازی بهتر مسیرت، <Link href="/dashboard/profile"><strong>پروفایل را کامل کن</strong></Link>.
+                </div>
+              )}
             </div>
             <div className="metric-grid">
               <div className="metric"><strong>{activeCount}</strong><span>ثبت‌نام فعال</span></div>

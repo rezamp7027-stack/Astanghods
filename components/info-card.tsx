@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function InfoCard({kicker,title,text,href,linkLabel="مشاهده"}:{kicker:string;title:string;text:string;href?:string;linkLabel?:string}){return <article className="info-card"><span>{kicker}</span><h3>{title}</h3><p>{text}</p>{href&&<Link href={href}>{linkLabel} ←</Link>}</article>}

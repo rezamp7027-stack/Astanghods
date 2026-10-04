@@ -1,0 +1,2 @@
+import Link from "next/link";
+export function SiteFooter(){return <footer className="site-footer"><div className="container footer-grid"><div><div className="brand"><span className="brand-mark">✦</span><span>جوانان آستان قدس<small>مسیر رشد · آموزش · شبکه</small></span></div><p>درگاه جامع ارتباط، آموزش و شبکه‌سازی جوانان.</p></div><nav aria-label="لینک‌های پایانی"><Link href="/about">درباره مؤسسه</Link><Link href="/content">محتوا</Link><Link href="/privacy">حریم خصوصی</Link><Link href="/login">ورود</Link></nav></div></footer>}

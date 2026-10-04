@@ -1,0 +1,1 @@
+export default function Loading(){return <div style={{minHeight:"40vh",display:"grid",placeItems:"center",color:"var(--muted)",fontSize:13}}>در حال آماده‌سازی مسیر…</div>}

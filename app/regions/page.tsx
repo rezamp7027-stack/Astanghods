@@ -1,0 +1,4 @@
+import {InfoCard} from "@/components/info-card";
+export const metadata={title:"استان من | جوانان آستان قدس رضوی"};
+const regions=["خراسان رضوی","تهران","قم","اصفهان","شیراز","تبریز","مازندران","یزد"];
+export default function RegionsPage(){return <main id="content" className="page-shell"><div className="container"><div className="page-intro"><span className="eyebrow">استان من</span><h1>مسیر فقط در مشهد ادامه ندارد.</h1><p>استانت را انتخاب کن تا برنامه‌ها، گروه‌ها و فرصت‌های ادامه مسیر همان محدوده را ببینی.</p></div><div className="info-grid">{regions.map(region=><InfoCard key={region} kicker="استان" title={region} text="برنامه‌های فعال، شبکه‌های محلی و فرصت‌های مشارکت در این استان." href="/programs" linkLabel="دیدن برنامه‌ها"/>)}</div></div></main>}

@@ -12,7 +12,7 @@ export function SiteHeader() {
           <Link href="/programs">برنامه‌ها</Link>
           <Link href="/dashboard">مسیر من</Link>
           <Link href="/programs">آموزش</Link>
-          <Link href="/programs">رویدادها</Link>
+          <Link href="/events">رویدادها</Link>
         </nav>
         <div className="nav-actions">
           <Link href="/login" className="btn btn-secondary">ورود</Link>

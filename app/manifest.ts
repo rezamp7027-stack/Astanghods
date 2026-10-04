@@ -1,0 +1,2 @@
+import type {MetadataRoute} from "next";
+export default function manifest():MetadataRoute.Manifest{return{name:"جوانان آستان قدس رضوی",short_name:"جوانان رضوی",description:"درگاه جامع ارتباط، آموزش و شبکه‌سازی جوانان",start_url:"/",display:"standalone",background_color:"#f7f5ef",theme_color:"#123d33",dir:"rtl",lang:"fa"}}

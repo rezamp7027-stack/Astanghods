@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { ProfileForm } from "@/components/profile-form";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -10,10 +11,12 @@ export default async function ProfilePage() {
   if (!claimsData?.claims) redirect("/login?next=/dashboard/profile");
 
   const userId = String(claimsData.claims.sub);
-  const [{ data: profile }, { data: user }] = await Promise.all([
-    supabase.from("profiles").select("display_name,full_name,phone,city,bio,onboarding_completed").eq("id", userId).single(),
-    supabase.auth.getUser(),
-  ]);
+  const email = String(claimsData.claims.email ?? "");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name,full_name,phone,city,bio,onboarding_completed")
+    .eq("id", userId)
+    .single();
 
   return (
     <>
@@ -22,14 +25,25 @@ export default async function ProfilePage() {
         <div className="container">
           <div className="detail-card" style={{maxWidth:760, marginInline:"auto"}}>
             <span className="eyebrow">پروفایل</span>
-            <h1 style={{fontSize:42}}>اطلاعات حساب</h1>
-            <div className="form-stack">
-              <div className="callout"><strong>ایمیل</strong><br />{user.user?.email ?? "ثبت نشده"}</div>
-              <div className="callout"><strong>نام نمایشی</strong><br />{profile?.display_name ?? "تکمیل نشده"}</div>
-              <div className="callout"><strong>نام و نام خانوادگی</strong><br />{profile?.full_name ?? "تکمیل نشده"}</div>
-              <div className="callout"><strong>شهر</strong><br />{profile?.city ?? "تکمیل نشده"}</div>
+            <h1 style={{fontSize:42}}>تکمیل مسیر شخصی</h1>
+            <div className="callout">
+              <strong>ایمیل حساب</strong><br />
+              <span dir="ltr">{email || "ثبت نشده"}</span>
             </div>
-            <p className="lead" style={{fontSize:14}}>ویرایش کامل پروفایل در مرحله بعدی همین هسته اضافه می‌شود. فعلاً داده‌های حساس عمداً در رابط عمومی نمایش داده نمی‌شوند.</p>
+            <ProfileForm
+              userId={userId}
+              initial={{
+                displayName: profile?.display_name ?? "",
+                fullName: profile?.full_name ?? "",
+                phone: profile?.phone ?? "",
+                city: profile?.city ?? "",
+                bio: profile?.bio ?? "",
+                onboardingCompleted: profile?.onboarding_completed ?? false,
+              }}
+            />
+            <p className="lead" style={{fontSize:14}}>
+              اطلاعات پروفایل برای شخصی‌سازی مسیر، پیشنهاد برنامه‌ها و ارتباط‌های بعدی استفاده می‌شود. داده‌های خصوصی این بخش در دسترس عمومی نیستند.
+            </p>
           </div>
         </div>
       </main>

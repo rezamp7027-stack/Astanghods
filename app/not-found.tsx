@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function NotFound(){return <main className="auth-shell"><div className="auth-card"><span className="eyebrow">صفحه پیدا نشد</span><h1>این مسیر فعلاً وجود ندارد.</h1><p>لینک را بررسی کن. اینترنت هم ظاهراً امروز تصمیم گرفته کمی شخصیت نشان بدهد.</p><Link href="/" className="button button-primary button-full">بازگشت به خانه</Link></div></main>}

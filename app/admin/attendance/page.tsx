@@ -1,2 +1,37 @@
-import { requireStaff } from "@/lib/auth";import { markAttendance } from "@/app/admin/actions";export const dynamic="force-dynamic";
-export default async function AdminAttendancePage(){const {supabase}=await requireStaff();const {data:sessionData}=await supabase.from("event_sessions").select("id,title,starts_at,event_id").order("starts_at",{ascending:false}).limit(200);const {data:profileData}=await supabase.from("profiles").select("id,display_name,full_name").limit(500);const {data:attendanceData}=await supabase.from("attendance").select("id,session_id,user_id,status,checked_at").order("checked_at",{ascending:false}).limit(200);const sessions=sessionData??[],profiles=profileData??[],rows=attendanceData??[],names=new Map(profiles.map(p=>[p.id,p.display_name??p.full_name??"کاربر"]));return <section><div className="admin-head"><div><span className="eyebrow">عملیات</span><h1>حضور و غیاب</h1><p className="lead">ثبت حضور با upsert امن و ثبت شناسه ثبت‌کننده.</p></div></div><div className="admin-card"><form className="admin-form" action={markAttendance}><fieldset><legend>ثبت وضعیت</legend><div className="form-grid"><div className="field"><label htmlFor="session_id">جلسه *</label><select id="session_id" name="session_id" required><option value="">انتخاب جلسه</option>{sessions.map(s=><option value={s.id} key={s.id}>{s.title} · {new Date(s.starts_at).toLocaleDateString("fa-IR")}</option>)}</select></div><div className="field"><label htmlFor="user_id">شناسه جوان *</label><input id="user_id" name="user_id" required/></div><div className="field"><label htmlFor="status">وضعیت *</label><select id="status" name="status" defaultValue="present" required><option value="present">حاضر</option><option value="late">با تأخیر</option><option value="absent">غایب</option><option value="excused">موجه</option></select></div><div className="field field-wide"><label htmlFor="notes">یادداشت</label><textarea id="notes" name="notes" rows={3}/></div></div></fieldset><button className="btn btn-primary" type="submit">ثبت حضور</button></form></div><div className="table-wrap"><table><caption className="visually-hidden">آخرین وضعیت‌های حضور</caption><thead><tr><th scope="col">جوان</th><th scope="col">جلسه</th><th scope="col">وضعیت</th><th scope="col">ثبت</th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><th scope="row">{names.get(r.user_id)??r.user_id.slice(0,8)}</th><td>{sessions.find(s=>s.id===r.session_id)?.title??"جلسه"}</td><td><span className="status">{r.status}</span></td><td>{r.checked_at?new Date(r.checked_at).toLocaleString("fa-IR"):"-"}</td></tr>)}</tbody></table></div></section>}
+import { requireStaff } from "@/lib/auth";
+import { markAttendance } from "@/app/admin/actions";
+
+export const dynamic = "force-dynamic";
+
+const labels: Record<string,string> = { present:"حاضر", absent:"غایب", late:"با تأخیر", excused:"موجه" };
+
+export default async function AdminAttendancePage() {
+  const { supabase } = await requireStaff();
+  const [{ data: sessionData }, { data: profileData }, { data: attendanceData }] = await Promise.all([
+    supabase.from("event_sessions").select("id,title,starts_at,event_id").order("starts_at",{ascending:false}).limit(200),
+    supabase.from("profiles").select("id,display_name,full_name").order("created_at",{ascending:false}).limit(500),
+    supabase.from("attendance").select("id,session_id,user_id,status,checked_at").order("checked_at",{ascending:false}).limit(200),
+  ]);
+  const sessions=sessionData??[], profiles=profileData??[], rows=attendanceData??[];
+  const names=new Map(profiles.map(p=>[p.id,p.display_name??p.full_name??"کاربر"]));
+
+  return <section>
+    <div className="admin-head"><div><span className="eyebrow">عملیات</span><h1>حضور و غیاب</h1><p className="lead">ثبت حضور با upsert امن و شناسه ثبت‌کننده.</p></div></div>
+    <div className="admin-card">
+      <form className="admin-form" action={markAttendance}>
+        <fieldset><legend>ثبت وضعیت</legend><div className="form-grid">
+          <div className="field"><label htmlFor="session_id">جلسه *</label><select id="session_id" name="session_id" required><option value="">انتخاب جلسه</option>{sessions.map(s=><option value={s.id} key={s.id}>{s.title} · {new Date(s.starts_at).toLocaleDateString("fa-IR")}</option>)}</select></div>
+          <div className="field"><label htmlFor="user_id">جوان *</label><select id="user_id" name="user_id" required><option value="">انتخاب جوان</option>{profiles.map(p=><option value={p.id} key={p.id}>{p.display_name??p.full_name??p.id.slice(0,8)}</option>)}</select></div>
+          <div className="field"><label htmlFor="status">وضعیت *</label><select id="status" name="status" defaultValue="present" required><option value="present">حاضر</option><option value="late">با تأخیر</option><option value="absent">غایب</option><option value="excused">موجه</option></select></div>
+          <div className="field field-wide"><label htmlFor="notes">یادداشت</label><textarea id="notes" name="notes" rows={3} maxLength={1000} /></div>
+        </div></fieldset>
+        {!profiles.length && <div className="notice">ابتدا باید برای کاربران حساب و پروفایل ساخته شود.</div>}
+        <button className="btn btn-primary" type="submit" disabled={!profiles.length || !sessions.length}>ثبت حضور</button>
+      </form>
+    </div>
+    <div className="table-wrap"><table><caption className="visually-hidden">آخرین وضعیت‌های حضور</caption><thead><tr><th scope="col">جوان</th><th scope="col">جلسه</th><th scope="col">وضعیت</th><th scope="col">ثبت</th></tr></thead><tbody>
+      {rows.map(r=><tr key={r.id}><th scope="row">{names.get(r.user_id)??r.user_id.slice(0,8)}</th><td>{sessions.find(s=>s.id===r.session_id)?.title??"جلسه"}</td><td><span className="status">{labels[r.status]??r.status}</span></td><td>{r.checked_at?new Date(r.checked_at).toLocaleString("fa-IR"):"-"}</td></tr>)}
+    </tbody></table></div>
+    {!rows.length&&<div className="empty">هنوز سابقه حضوری ثبت نشده است.</div>}
+  </section>;
+}

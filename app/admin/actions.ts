@@ -81,9 +81,9 @@ export async function createEventSession(formData: FormData) {
 export async function createContent(formData: FormData) {
  const { supabase, userId } = await requireRole(["super_admin","content_manager"]);
  const title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
- if(!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status))throw new Error("invalid_content_payload");
+ if(!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status)||!["article","video","announcement","guide"].includes(v(formData,"content_type")))throw new Error("invalid_content_payload");
  let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
- const {data,error}=await supabase.from("content").insert({title,slug,summary:summary||null,body:parsed as never,status:status as never,published_at:status==="published"?new Date().toISOString():null,author_id:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.create",entity_type:"content",entity_id:data.id,metadata:{title,slug,status}});redirect("/admin/content");
+ const {data,error}=await supabase.from("content").insert({title,slug,summary:summary||null,body:parsed as never,content_type:v(formData,"content_type")||"article",status:status as never,published_at:status==="published"?new Date().toISOString():null,author_id:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.create",entity_type:"content",entity_id:data.id,metadata:{title,slug,status}});redirect("/admin/content");
 }
 export async function dispatchNotifications() {
  const { supabase } = await requireRole(["super_admin","crm_manager"]);
@@ -205,9 +205,9 @@ export async function addOrganizationMember(formData:FormData) {
 export async function updateContent(formData:FormData) {
  const {supabase,userId}=await requireRole(["super_admin","content_manager"]);
  const id=v(formData,"content_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
- if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status))throw new Error("invalid_content_update");
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status)||!["article","video","announcement","guide"].includes(v(formData,"content_type")))throw new Error("invalid_content_update");
  let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
- const {error}=await supabase.from("content").update({title,slug,summary:summary||null,body:parsed as never,status:status as never,published_at:status==="published"?new Date().toISOString():null}).eq("id",id);
+ const {error}=await supabase.from("content").update({title,slug,summary:summary||null,body:parsed as never,content_type:v(formData,"content_type")||"article",status:status as never,published_at:status==="published"?new Date().toISOString():null}).eq("id",id);
  if(error)throw new Error(error.message);
  await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.update",entity_type:"content",entity_id:id,metadata:{title,slug,status}});
  redirect("/admin/content");

@@ -85,6 +85,7 @@ export default async function HomePage() {
               <div className="button-row">
                 <Link href="/content" className="btn btn-secondary">مشاهده آرشیو</Link>
                 <Link href="/search" className="btn btn-secondary">جست‌وجوی سامانه</Link>
+                <Link href="/research" className="btn btn-secondary">منابع پژوهش</Link>
               </div>
             </div>
           </div>

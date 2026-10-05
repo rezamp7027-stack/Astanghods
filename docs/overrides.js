@@ -110,3 +110,17 @@
     (canSuper()?"<div class='card' style='margin-top:15px'><h2>آخرین تغییرات</h2><div class='table-wrap'><table class='table'><tr><th>زمان</th><th>عملیات</th><th>بخش</th></tr>"+(g.data||[]).map(x=>"<tr><td>"+dateFa(x.created_at)+"</td><td>"+esc(x.action)+"</td><td>"+esc(x.entity_type)+"</td></tr>").join("")+"</table></div></div>":"");
   };
 })();
+
+(function(){
+  const _renderPublic=window.renderPublic;
+  window.renderPublic=function(){_renderPublic();applyLogo()};
+  window.applyLogo=function(){
+    const url=findMedia(S.settings.logo_media_id)?.public_url;
+    if(!url)return;
+    $$(".brand").forEach(function(el){
+      el.innerHTML="<img src='"+esc(url)+"' alt='"+esc(S.settings.name||"NOIR")+"' style='height:34px;width:auto;display:block;object-fit:contain'>";
+      el.style.display="inline-flex";el.style.alignItems="center";
+    });
+  };
+  setTimeout(applyLogo,600);
+})();

@@ -1,14 +1,1 @@
-import Link from "next/link";
-
-export default function NotFound() {
-  return (
-    <main className="auth-shell">
-      <div className="auth-card">
-        <span className="eyebrow">۴۰۴</span>
-        <h1>این صفحه پیدا نشد</h1>
-        <p>آدرس اشتباه است یا این بخش هنوز منتشر نشده. اینترنت هم طبق معمول تصمیم گرفته کمی ماجرا را شخصی کند.</p>
-        <Link className="btn btn-primary" href="/">بازگشت به صفحه اصلی</Link>
-      </div>
-    </main>
-  );
-}
+import Link from"next/link";export default function NotFound(){return <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"#0d0d0c",color:"#f6f1e7",textAlign:"center",padding:24}}><div><span style={{color:"#d6b978",letterSpacing:".18em"}}>NOIR · 404</span><h1 style={{fontSize:"clamp(58px,12vw,140px)",lineHeight:1,margin:"15px 0"}}>404</h1><p style={{color:"#9b9588"}}>این صفحه در منو پیدا نشد.</p><Link href="/" style={{color:"#d6b978"}}>بازگشت به رستوران ↗</Link></div></main>}

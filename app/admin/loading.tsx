@@ -1,0 +1,1 @@
+export default function Loading(){return <div className="admin-stack"><div className="admin-card"><div className="kicker">NOIR · ADMIN</div><h1>در حال بارگذاری...</h1><p className="admin-muted">اطلاعات واقعی در حال دریافت است.</p></div></div>}

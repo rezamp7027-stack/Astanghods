@@ -1,5 +1,6 @@
 import { requireStaff } from "@/lib/auth";
 import { createContent } from "@/app/admin/actions";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export default async function AdminContentPage() {
         <table>
           <caption className="visually-hidden">فهرست محتوا</caption>
           <thead>
-            <tr><th scope="col">عنوان</th><th scope="col">نوع</th><th scope="col">وضعیت</th><th scope="col">به‌روزرسانی</th></tr>
+            <tr><th scope="col">عنوان</th><th scope="col">نوع</th><th scope="col">وضعیت</th><th scope="col">به‌روزرسانی</th><th scope="col">عملیات</th></tr>
           </thead>
           <tbody>
             {rows.map((row) => (
@@ -77,7 +78,7 @@ export default async function AdminContentPage() {
                 <th scope="row">{row.title}</th>
                 <td>{row.content_type}</td>
                 <td><span className="status">{row.status}</span></td>
-                <td>{new Date(row.updated_at).toLocaleDateString("fa-IR")}</td>
+                <td>{new Date(row.updated_at).toLocaleDateString("fa-IR")}</td><td><Link className="btn btn-secondary btn-small" href={"/admin/content/"+row.id}>ویرایش</Link></td>
               </tr>
             ))}
           </tbody>

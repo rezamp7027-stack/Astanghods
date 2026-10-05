@@ -1410,6 +1410,156 @@ export type Database = {
           },
         ]
       }
+      volunteer_assignments: {
+        Row: {
+          applied_at: string
+          completed_at: string | null
+          confirmed_at: string | null
+          id: string
+          notes: string | null
+          opportunity_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string
+          completed_at?: string | null
+          confirmed_at?: string | null
+          id?: string
+          notes?: string | null
+          opportunity_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_assignments_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "volunteer_opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_opportunities: {
+        Row: {
+          capacity: number | null
+          city: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string | null
+          id: string
+          province_id: string | null
+          skills: string[]
+          slug: string
+          starts_at: string | null
+          status: string
+          summary: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          capacity?: number | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          province_id?: string | null
+          skills?: string[]
+          slug: string
+          starts_at?: string | null
+          status?: string
+          summary?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number | null
+          city?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          province_id?: string | null
+          skills?: string[]
+          slug?: string
+          starts_at?: string | null
+          status?: string
+          summary?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_opportunities_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      volunteer_profiles: {
+        Row: {
+          availability: Json
+          bio: string | null
+          city: string | null
+          created_at: string
+          interests: string[]
+          is_active: boolean
+          province_id: string | null
+          skills: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          availability?: Json
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          interests?: string[]
+          is_active?: boolean
+          province_id?: string | null
+          skills?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          availability?: Json
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          interests?: string[]
+          is_active?: boolean
+          province_id?: string | null
+          skills?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "volunteer_profiles_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist_entries: {
         Row: {
           id: string
@@ -1467,6 +1617,25 @@ export type Database = {
           user_id: string
           waitlist_position: number
         }[]
+      }
+      apply_volunteer_opportunity: {
+        Args: { p_opportunity_id: string }
+        Returns: {
+          applied_at: string
+          completed_at: string | null
+          confirmed_at: string | null
+          id: string
+          notes: string | null
+          opportunity_id: string
+          status: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "volunteer_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       award_points: {
         Args: {

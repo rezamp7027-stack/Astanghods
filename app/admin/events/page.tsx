@@ -1,4 +1,5 @@
 import { requireStaff } from "@/lib/auth";
+import Link from "next/link";
 import { createEvent, createEventSession, promoteEventWaitlist } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";
@@ -70,7 +71,7 @@ export default async function AdminEventsPage() {
             <div className="metric"><strong>{waitlisted}</strong><span>صف انتظار</span></div>
             <div className="metric"><strong>{sessions.filter(s=>s.event_id===event.id).length}</strong><span>جلسه</span></div>
           </div>
-          <div className="tag-row">{sessions.filter(s=>s.event_id===event.id).slice(0,4).map(s=><span className="tag" key={s.id}>{s.title}</span>)}</div>
+          <div className="tag-row">{sessions.filter(s=>s.event_id===event.id).slice(0,4).map(s=><span className="tag" key={s.id}>{s.title}</span>)}</div><div className="button-row"><Link className="btn btn-secondary btn-small" href={"/admin/events/"+event.id}>ویرایش رویداد</Link></div>
           {waitlisted>0 && event.capacity!=null && confirmed<event.capacity && (
             <form action={promoteEventWaitlist} className="button-row">
               <input type="hidden" name="event_id" value={event.id}/>

@@ -8,14 +8,6 @@ export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ slug: string }> };
 
-const registrationLabels: Record<string, string> = {
-  pending: "در انتظار",
-  confirmed: "تأییدشده",
-  waitlisted: "صف انتظار",
-  cancelled: "لغوشده",
-  completed: "تکمیل‌شده",
-};
-
 export default async function EventDetailPage({ params }: Props) {
   const { slug } = await params;
   const supabase = await createClient();

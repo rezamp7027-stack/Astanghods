@@ -68,7 +68,13 @@ drop policy if exists user_roles_super_admin_all on public.user_roles;
 create policy user_roles_select on public.user_roles
 for select to authenticated
 using (((select auth.uid()) = user_id) or (select private.has_role('super_admin'::text)));
-create policy user_roles_super_admin_manage on public.user_roles
-for all to authenticated
+create policy user_roles_super_admin_insert on public.user_roles
+for insert to authenticated
+with check ((select private.has_role('super_admin'::text)));
+create policy user_roles_super_admin_update on public.user_roles
+for update to authenticated
 using ((select private.has_role('super_admin'::text)))
 with check ((select private.has_role('super_admin'::text)));
+create policy user_roles_super_admin_delete on public.user_roles
+for delete to authenticated
+using ((select private.has_role('super_admin'::text)));

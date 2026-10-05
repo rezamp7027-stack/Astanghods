@@ -1,20 +1,3 @@
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: {
-    default: "جوانان آستان قدس رضوی",
-    template: "%s | جوانان آستان قدس رضوی",
-  },
-  description:
-    "سامانه جامع ارتباط، آموزش، برنامه‌ها و شبکه‌سازی جوانان آستان قدس رضوی",
-};
-
-export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
-  return (
-    <html lang="fa" dir="rtl">
-      <body>{children}</body>
-    </html>
-  );
-}
+import type{Metadata}from"next";import{ReactNode}from"react";import{createClient}from"@/lib/supabase/server";import"./globals.css";import{AnalyticsTracker}from"@/components/analytics-tracker";
+export async function generateMetadata():Promise<Metadata>{const s=await createClient();const[{data:seo},{data:settings}]=await Promise.all([s.from("seo_settings").select("*").single(),s.from("restaurant_settings").select("*").single()]);let og="";let icon="";if(seo?.og_image_media_id||settings?.favicon_media_id){const ids=[seo?.og_image_media_id,settings?.favicon_media_id].filter(Boolean) as string[];const{data:m}=await s.from("media").select("id,public_url").in("id",ids);og=m?.find((x:any)=>x.id===seo?.og_image_media_id)?.public_url||"";icon=m?.find((x:any)=>x.id===settings?.favicon_media_id)?.public_url||""}return{title:{default:seo?.title||settings?.name||"NOIR",template:"%s | "+(settings?.name||"NOIR")},description:seo?.description||settings?.description||"",keywords:seo?.keywords||[],robots:{index:seo?.robots_index??true,follow:seo?.robots_follow??true},icons:icon?{icon}:undefined,openGraph:{title:seo?.title||settings?.name||"NOIR",description:seo?.description||"",type:"website",url:seo?.canonical_url||undefined,images:og?[{url:og}]:undefined}}}
+export default function RootLayout({children}:{children:ReactNode}){return <html lang="fa" dir="rtl"><body>{children}<AnalyticsTracker/></body></html>}

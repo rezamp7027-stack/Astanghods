@@ -1,5 +1,2 @@
-import type { MetadataRoute } from "next";
-export default function robots():MetadataRoute.Robots{
- const base=process.env.NEXT_PUBLIC_SITE_URL||"https://example.invalid";
- return{rules:{userAgent:"*",allow:"/",disallow:["/admin/","/dashboard/","/mentor","/parent","/api/"]},sitemap:base+"/sitemap.xml"};
-}
+import type{MetadataRoute}from"next";import{createClient}from"@/lib/supabase/server";
+export default async function robots():Promise<MetadataRoute.Robots>{const s=await createClient();const{data:x}=await s.from("seo_settings").select("canonical_url,robots_index,robots_follow").single();const base=x?.canonical_url||process.env.NEXT_PUBLIC_SITE_URL||"http://localhost:3000";return{rules:{userAgent:"*",allow:x?.robots_index?"/":["/"],disallow:"/admin"},sitemap:base+"/sitemap.xml"}}

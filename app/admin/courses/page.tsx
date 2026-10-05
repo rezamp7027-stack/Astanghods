@@ -12,8 +12,6 @@ export default async function AdminCoursesPage() {
   ]);
   const courses=courseData??[], modules=moduleData??[], lessons=lessonData??[];
   const courseNames=new Map(courses.map(c=>[c.id,c.title]));
-  const moduleNames=new Map(modules.map(m=>[m.id,courseNames.has(m.course_id)?courseNames.get(m.course_id)+" · ":""]));
-
   return <section>
     <div className="admin-head"><div><span className="eyebrow">LMS</span><h1>مدیریت دوره‌ها</h1><p className="lead">دوره، ماژول و درس را از یک مرکز مدیریت کنید.</p></div></div>
     <div className="admin-card-grid">{courses.map(course=><article className="admin-card" key={course.id}><span className="status">{course.is_published?"منتشرشده":"پیش‌نویس"}</span><h2>{course.title}</h2><p>{course.summary??""}</p><small>{modules.filter(m=>m.course_id===course.id).length} ماژول · {lessons.filter(l=>modules.some(m=>m.id===l.module_id&&m.course_id===course.id)).length} درس</small></article>)}</div>

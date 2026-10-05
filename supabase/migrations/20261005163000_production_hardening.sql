@@ -1,5 +1,6 @@
 -- Production hardening for the GitHub Pages + Supabase architecture.
 alter table public.rate_limits set schema private;
+alter table private.rate_limits disable row level security;
 
 create or replace function private.consume_rate_limit(p_key text, p_limit integer, p_window_seconds integer)
 returns boolean

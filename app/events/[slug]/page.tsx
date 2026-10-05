@@ -29,7 +29,7 @@ export default async function EventDetailPage({ params }: Props) {
 
   if (!event) notFound();
 
-  const isPast = new Date(event.starts_at).getTime() < Date.now();
+  const isPast = new Date(event.starts_at).getTime() < new Date().getTime();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub ? String(claims.claims.sub) : null;
   const { data: myReg } = !isPast && userId

@@ -152,3 +152,51 @@ export async function createJourneyStep(formData:FormData){
  const {error}=await supabase.from("journey_steps").insert({journey_id,action_type,step_order,delay_minutes:n(formData,"delay_minutes")??0,config:config as never});
  if(error)throw new Error(error.message);redirect("/admin/journeys");
 }
+
+
+export async function updateProgram(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","program_manager"]);
+ const id=v(formData,"program_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),status=v(formData,"status") as ProgramStatus;
+ const valid:ProgramStatus[]=["draft","published","registration_closed","running","completed","archived"];
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!valid.includes(status))throw new Error("invalid_program_update");
+ const {error}=await supabase.from("programs").update({
+   title,slug,status,program_type:v(formData,"program_type")||"training",
+   summary:v(formData,"summary")||null,description:v(formData,"description")||null,
+   audience_min_age:n(formData,"min_age"),audience_max_age:n(formData,"max_age"),
+   capacity:n(formData,"capacity"),province_id:v(formData,"province_id")||null,
+   city:v(formData,"city")||null,location_name:v(formData,"location_name")||null,
+   start_at:d(formData,"start_at"),end_at:d(formData,"end_at"),
+   registration_open_at:d(formData,"registration_open_at"),registration_close_at:d(formData,"registration_close_at"),
+   published_at:status==="published"?new Date().toISOString():null,
+ }).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"program.update",entity_type:"program",entity_id:id,metadata:{title,slug,status}});
+ redirect("/admin/programs/"+id);
+}
+
+export async function createMentorProfile(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","mentor_manager"]);
+ const user_id=v(formData,"user_id");
+ const expertise=v(formData,"expertise").split(",").map(x=>x.trim()).filter(Boolean).slice(0,20);
+ const max=n(formData,"max_active_assignments")??10;
+ if(!user_id||max<1||max>100)throw new Error("invalid_mentor_profile");
+ const {error}=await supabase.from("mentor_profiles").upsert({
+   user_id,expertise,bio:v(formData,"bio")||null,max_active_assignments:max,
+   is_available:v(formData,"is_available")!=="false",
+ },{onConflict:"user_id"});
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"mentor.profile_upsert",entity_type:"mentor_profile",entity_id:user_id,metadata:{expertise_count:expertise.length}});
+ redirect("/admin/mentors");
+}
+
+export async function addOrganizationMember(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","regional_manager"]);
+ const organization_id=v(formData,"organization_id"),member_user_id=v(formData,"user_id"),role_name=v(formData,"role_name")||"member";
+ if(!organization_id||!member_user_id)throw new Error("invalid_organization_member");
+ const {error}=await supabase.from("organization_members").upsert({
+   organization_id,user_id:member_user_id,role_name,is_active:true
+ },{onConflict:"organization_id,user_id"});
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"organization.member_upsert",entity_type:"organization_member",entity_id:organization_id,metadata:{member_user_id,role_name}});
+ redirect("/admin/network");
+}

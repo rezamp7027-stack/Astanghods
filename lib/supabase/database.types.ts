@@ -1531,6 +1531,7 @@ export type Database = {
         Args: { required_role: Database["public"]["Enums"]["app_role"] }
         Returns: boolean
       }
+      refresh_my_recommendations: { Args: never; Returns: number }
       register_for_program: {
         Args: { p_program_id: string }
         Returns: {

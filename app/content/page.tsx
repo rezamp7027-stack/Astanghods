@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 
@@ -26,10 +27,11 @@ export default async function ContentPage() {
       <main className="page">
         <div className="container">
           <div className="page-head">
+            <span className="eyebrow">رسانه</span>
             <h1>محتوا</h1>
             <p>مقاله‌ها، راهنماها و محتوای آموزشی منتخب جوانان رضوی.</p>
           </div>
-          {error ? <div className="notice error">خطا در دریافت محتوا.</div> : null}
+          {error ? <div className="notice error" role="alert">خطا در دریافت محتوا.</div> : null}
           {!content?.length ? (
             <div className="empty">هنوز محتوای منتشرشده‌ای ثبت نشده است.</div>
           ) : (
@@ -45,12 +47,17 @@ export default async function ContentPage() {
                   <div className="meta">
                     {item.published_at && <span>{new Date(item.published_at).toLocaleDateString("fa-IR")}</span>}
                   </div>
+                  <div className="bottom">
+                    <span className="tag">محتوای رسمی</span>
+                    <Link className="btn btn-secondary" href={`/content/${item.slug}`}>خواندن محتوا</Link>
+                  </div>
                 </article>
               ))}
             </div>
           )}
         </div>
       </main>
+      <footer className="footer"><div className="container">سامانه جامع جوانان آستان قدس رضوی</div></footer>
     </>
   );
 }

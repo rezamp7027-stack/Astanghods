@@ -7,19 +7,21 @@ function v(fd:FormData,k:string){const x=fd.get(k);return typeof x==="string"?x.
 function n(fd:FormData,k:string){const x=v(fd,k);if(!x)return null;const y=Number(x);return Number.isFinite(y)?y:null;}
 function d(fd:FormData,k:string){const x=v(fd,k);if(!x)return null;const y=new Date(x);return Number.isNaN(y.getTime())?null:y.toISOString();}
 async function requireRole(roles:Role[]){const supabase=await createClient();const {data}=await supabase.auth.getClaims();if(!data?.claims?.sub)redirect("/login?next=/admin");const userId=String(data.claims.sub);const {data:allowed,error}=await supabase.rpc("has_any_role",{required_roles:roles});if(error||!allowed)redirect("/dashboard");return{supabase,userId};}
-export async function createProgram(fd:FormData){const {supabase,userId}=await requireRole(["super_admin","program_manager"]);const title=v(fd,"title"),slug=v(fd,"slug").toLowerCase(),status=v(fd,"status") as ProgramStatus;const valid:ProgramStatus[]=["draft","published","registration_closed","running"];if(!title||!/^[a-z0-9-]+$/.test(slug)||!valid.includes(status))throw new Error("invalid_program_payload");const {data,error}=await supabase.from("programs").insert({title,slug,status,program_type:v(fd,"program_type")||"training",summary:v(fd,"summary")||null,description:v(fd,"description")||null,audience_min_age:n(fd,"min_age"),audience_max_age:n(fd,"max_age"),capacity:n(fd,"capacity"),city:v(fd,"city")||null,location_name:v(fd,"location_name")||null,start_at:d(fd,"start_at"),end_at:d(fd,"end_at"),registration_open_at:d(fd,"registration_open_at"),registration_close_at:d(fd,"registration_close_at"),published_at:status==="published"?new Date().toISOString():null,created_by:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"program.create",entity_type:"program",entity_id:data.id,metadata:{title,slug}});redirect("/admin/programs");}
+export async function createProgram(fd:FormData){const {supabase,userId}=await requireRole(["super_admin","program_manager"]);const title=v(fd,"title"),slug=v(fd,"slug").toLowerCase(),status=v(fd,"status") as ProgramStatus;const valid:ProgramStatus[]=["draft","published","registration_closed","running"];if(!title||!/^[a-z0-9-]+$/.test(slug)||!valid.includes(status))throw new Error("invalid_program_payload");const {data,error}=await supabase.from("programs").insert({title,slug,status,program_type:v(fd,"program_type")||"training",summary:v(fd,"summary")||null,description:v(fd,"description")||null,audience_min_age:n(fd,"min_age"),audience_max_age:n(fd,"max_age"),capacity:n(fd,"capacity"),province_id:v(fd,"province_id")||null,city:v(fd,"city")||null,location_name:v(fd,"location_name")||null,start_at:d(fd,"start_at"),end_at:d(fd,"end_at"),registration_open_at:d(fd,"registration_open_at"),registration_close_at:d(fd,"registration_close_at"),published_at:status==="published"?new Date().toISOString():null,created_by:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"program.create",entity_type:"program",entity_id:data.id,metadata:{title,slug}});redirect("/admin/programs");}
 const registrationStatuses:RegistrationStatus[]=["pending","confirmed","waitlisted","cancelled","rejected","completed"];
-export async function updateRegistrationStatus(fd:FormData){const {supabase,userId}=await requireRole(["super_admin","program_manager","crm_manager"]);const id=v(fd,"registration_id"),status=v(fd,"status") as RegistrationStatus;if(!id||!registrationStatuses.includes(status))throw new Error("invalid_registration_update");const {data,error}=await supabase.from("registrations").update({status}).eq("id",id).select("program_id,user_id,status").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"registration.status_change",entity_type:"registration",entity_id:id,metadata:{program_id:data.program_id,user_id:data.user_id,status}});redirect("/admin/registrations");}
+export async function updateRegistrationStatus(fd:FormData){const {supabase,userId}=await requireRole(["super_admin","program_manager","crm_manager"]);const id=v(fd,"registration_id"),status=v(fd,"status") as RegistrationStatus;if(!id||!registrationStatuses.includes(status))throw new Error("invalid_registration_update");const {data,error}=await supabase.from("registrations").update({status}).eq("id",id).select("program_id,user_id,status").single();if(error)throw new Error(error.message);if(["cancelled","rejected"].includes(status)){const {error:promoteError}=await supabase.rpc("admin_promote_waitlist",{p_program_id:data.program_id});if(promoteError&&!["waitlist_empty","capacity_full","unlimited_capacity"].some(x=>promoteError.message.includes(x)))throw new Error(promoteError.message);}await supabase.from("audit_logs").insert({actor_user_id:userId,action:"registration.status_change",entity_type:"registration",entity_id:id,metadata:{program_id:data.program_id,user_id:data.user_id,status}});redirect("/admin/registrations");}
 export async function promoteWaitlist(fd:FormData){const {supabase}=await requireRole(["super_admin","program_manager","crm_manager"]);const programId=v(fd,"program_id");if(!programId)throw new Error("program_required");const {error}=await supabase.rpc("admin_promote_waitlist",{p_program_id:programId});if(error)throw new Error(error.message);redirect("/admin/registrations");}
+export async function promoteEventWaitlist(fd:FormData){const {supabase}=await requireRole(["super_admin","program_manager","crm_manager"]);const eventId=v(fd,"event_id");if(!eventId)throw new Error("event_required");const {error}=await supabase.rpc("admin_promote_event_waitlist",{p_event_id:eventId});if(error)throw new Error(error.message);redirect("/admin/events");}
+
 
 
 export async function createOrganization(formData: FormData) {
  const { supabase, userId } = await requireRole(["super_admin","regional_manager"]);
  const name=v(formData,"name"), slug=v(formData,"slug").toLowerCase();
  if(!name || !/^[a-z0-9-]+$/.test(slug)) throw new Error("invalid_organization_payload");
- const {data,error}=await supabase.from("organizations").insert({name,slug,organization_type:v(formData,"organization_type")||"school",city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null}).select("id").single();
+ const {data,error}=await supabase.from("organizations").insert({name,slug,organization_type:v(formData,"organization_type")||"school",province_id:v(formData,"province_id")||null,city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null}).select("id").single();
  if(error) throw new Error(error.message);
- await supabase.from("organization_directory").insert({organization_id:data.id,name,slug,organization_type:v(formData,"organization_type")||"school",city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null});
+ await supabase.from("organization_directory").insert({organization_id:data.id,name,slug,organization_type:v(formData,"organization_type")||"school",province_id:v(formData,"province_id")||null,city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null});
  await supabase.from("audit_logs").insert({actor_user_id:userId,action:"organization.create",entity_type:"organization",entity_id:data.id,metadata:{name,slug}});
  redirect("/admin/network");
 }
@@ -81,9 +83,9 @@ export async function createEventSession(formData: FormData) {
 export async function createContent(formData: FormData) {
  const { supabase, userId } = await requireRole(["super_admin","content_manager"]);
  const title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
- if(!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status))throw new Error("invalid_content_payload");
+ if(!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status)||!["article","video","announcement","guide"].includes(v(formData,"content_type")))throw new Error("invalid_content_payload");
  let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
- const {data,error}=await supabase.from("content").insert({title,slug,summary:summary||null,body:parsed as never,status:status as never,published_at:status==="published"?new Date().toISOString():null,author_id:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.create",entity_type:"content",entity_id:data.id,metadata:{title,slug,status}});redirect("/admin/content");
+ const {data,error}=await supabase.from("content").insert({title,slug,summary:summary||null,body:parsed as never,content_type:v(formData,"content_type")||"article",status:status as never,published_at:status==="published"?new Date().toISOString():null,author_id:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.create",entity_type:"content",entity_id:data.id,metadata:{title,slug,status}});redirect("/admin/content");
 }
 export async function dispatchNotifications() {
  const { supabase } = await requireRole(["super_admin","crm_manager"]);
@@ -151,4 +153,79 @@ export async function createJourneyStep(formData:FormData){
  let config:unknown={};const raw=v(formData,"config");if(raw){try{config=JSON.parse(raw);}catch{config={text:raw};}}
  const {error}=await supabase.from("journey_steps").insert({journey_id,action_type,step_order,delay_minutes:n(formData,"delay_minutes")??0,config:config as never});
  if(error)throw new Error(error.message);redirect("/admin/journeys");
+}
+
+
+export async function updateProgram(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","program_manager"]);
+ const id=v(formData,"program_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),status=v(formData,"status") as ProgramStatus;
+ const valid:ProgramStatus[]=["draft","published","registration_closed","running","completed","archived"];
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!valid.includes(status))throw new Error("invalid_program_update");
+ const {error}=await supabase.from("programs").update({
+   title,slug,status,program_type:v(formData,"program_type")||"training",
+   summary:v(formData,"summary")||null,description:v(formData,"description")||null,
+   audience_min_age:n(formData,"min_age"),audience_max_age:n(formData,"max_age"),
+   capacity:n(formData,"capacity"),province_id:v(formData,"province_id")||null,
+   city:v(formData,"city")||null,location_name:v(formData,"location_name")||null,
+   start_at:d(formData,"start_at"),end_at:d(formData,"end_at"),
+   registration_open_at:d(formData,"registration_open_at"),registration_close_at:d(formData,"registration_close_at"),
+   published_at:status==="published"?new Date().toISOString():null,
+ }).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"program.update",entity_type:"program",entity_id:id,metadata:{title,slug,status}});
+ redirect("/admin/programs/"+id);
+}
+
+export async function createMentorProfile(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","mentor_manager"]);
+ const user_id=v(formData,"user_id");
+ const expertise=v(formData,"expertise").split(",").map(x=>x.trim()).filter(Boolean).slice(0,20);
+ const max=n(formData,"max_active_assignments")??10;
+ if(!user_id||max<1||max>100)throw new Error("invalid_mentor_profile");
+ const {error}=await supabase.from("mentor_profiles").upsert({
+   user_id,expertise,bio:v(formData,"bio")||null,max_active_assignments:max,
+   is_available:v(formData,"is_available")!=="false",
+ },{onConflict:"user_id"});
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"mentor.profile_upsert",entity_type:"mentor_profile",entity_id:user_id,metadata:{expertise_count:expertise.length}});
+ redirect("/admin/mentors");
+}
+
+export async function addOrganizationMember(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","regional_manager"]);
+ const organization_id=v(formData,"organization_id"),member_user_id=v(formData,"user_id"),role_name=v(formData,"role_name")||"member";
+ if(!organization_id||!member_user_id)throw new Error("invalid_organization_member");
+ const {error}=await supabase.from("organization_members").upsert({
+   organization_id,user_id:member_user_id,role_name,is_active:true
+ },{onConflict:"organization_id,user_id"});
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"organization.member_upsert",entity_type:"organization_member",entity_id:organization_id,metadata:{member_user_id,role_name}});
+ redirect("/admin/network");
+}
+
+
+export async function updateContent(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","content_manager"]);
+ const id=v(formData,"content_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status)||!["article","video","announcement","guide"].includes(v(formData,"content_type")))throw new Error("invalid_content_update");
+ let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
+ const {error}=await supabase.from("content").update({title,slug,summary:summary||null,body:parsed as never,content_type:v(formData,"content_type")||"article",status:status as never,published_at:status==="published"?new Date().toISOString():null}).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.update",entity_type:"content",entity_id:id,metadata:{title,slug,status}});
+ redirect("/admin/content");
+}
+
+export async function updateEvent(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","program_manager"]);
+ const id=v(formData,"event_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),starts_at=d(formData,"starts_at");
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!starts_at)throw new Error("invalid_event_update");
+ const {error}=await supabase.from("events").update({
+   title,slug,summary:v(formData,"summary")||null,description:v(formData,"description")||null,
+   starts_at,ends_at:d(formData,"ends_at"),venue_name:v(formData,"venue_name")||null,
+   venue_address:v(formData,"venue_address")||null,city:v(formData,"city")||null,
+   capacity:n(formData,"capacity"),program_id:v(formData,"program_id")||null,is_public:v(formData,"is_public")!=="false"
+ }).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"event.update",entity_type:"event",entity_id:id,metadata:{title,slug}});
+ redirect("/admin/events");
 }

@@ -1684,6 +1684,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_promote_event_waitlist: {
+        Args: { p_event_id: string }
+        Returns: {
+          event_id: string
+          id: string
+          registered_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_registrations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_promote_waitlist: {
         Args: { p_program_id: string }
         Returns: {
@@ -1715,6 +1732,42 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "volunteer_assignments"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_my_event_registration: {
+        Args: { p_event_id: string }
+        Returns: {
+          event_id: string
+          id: string
+          registered_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "event_registrations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_my_program_registration: {
+        Args: { p_program_id: string }
+        Returns: {
+          id: string
+          metadata: Json
+          notes: string | null
+          program_id: string
+          registered_at: string
+          status: Database["public"]["Enums"]["registration_status"]
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "registrations"
           isOneToOne: true
           isSetofReturn: false
         }

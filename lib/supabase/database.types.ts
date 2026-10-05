@@ -1416,6 +1416,45 @@ export type Database = {
         }
         Relationships: []
       }
+      support_requests: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          id: string
+          priority: string
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          category?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          id?: string
+          priority?: string
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           assigned_at: string
@@ -1653,6 +1692,14 @@ export type Database = {
           waitlist_position: number
         }[]
       }
+      admin_set_user_role: {
+        Args: {
+          p_enabled: boolean
+          p_role: Database["public"]["Enums"]["app_role"]
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       apply_volunteer_opportunity: {
         Args: { p_opportunity_id: string }
         Returns: {
@@ -1668,26 +1715,6 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "volunteer_assignments"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      award_points: {
-        Args: {
-          p_entity_id?: string
-          p_entity_type?: string
-          p_points: number
-          p_reason: string
-        }
-        Returns: {
-          level: number
-          total_points: number
-          updated_at: string
-          user_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "gamification_points"
           isOneToOne: true
           isSetofReturn: false
         }

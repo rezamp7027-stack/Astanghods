@@ -475,6 +475,166 @@ export type Database = {
           },
         ]
       }
+      gamification_events: {
+        Row: {
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          points: number
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          points?: number
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      gamification_points: {
+        Row: {
+          level: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          level?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      journey_enrollments: {
+        Row: {
+          completed_at: string | null
+          current_step: number
+          enrolled_at: string
+          id: string
+          journey_id: string
+          next_run_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          journey_id: string
+          next_run_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          journey_id?: string
+          next_run_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_enrollments_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journey_steps: {
+        Row: {
+          action_type: string
+          config: Json
+          delay_minutes: number
+          id: string
+          journey_id: string
+          step_order: number
+        }
+        Insert: {
+          action_type: string
+          config?: Json
+          delay_minutes?: number
+          id?: string
+          journey_id: string
+          step_order: number
+        }
+        Update: {
+          action_type?: string
+          config?: Json
+          delay_minutes?: number
+          id?: string
+          journey_id?: string
+          step_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_steps_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journeys: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_progress: {
         Row: {
           completed_at: string | null
@@ -743,6 +903,66 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      organization_directory: {
+        Row: {
+          city: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          organization_id: string
+          organization_type: string
+          province_id: string | null
+          slug: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          organization_id: string
+          organization_type: string
+          province_id?: string | null
+          slug: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          organization_id?: string
+          organization_type?: string
+          province_id?: string | null
+          slug?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_directory_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_directory_province_id_fkey"
+            columns: ["province_id"]
+            isOneToOne: false
+            referencedRelation: "provinces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organization_members: {
         Row: {
@@ -1060,6 +1280,42 @@ export type Database = {
         }
         Relationships: []
       }
+      recommendations: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          expires_at: string | null
+          id: string
+          reason: string | null
+          score: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          score?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          expires_at?: string | null
+          id?: string
+          reason?: string | null
+          score?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       registrations: {
         Row: {
           id: string
@@ -1212,6 +1468,44 @@ export type Database = {
           waitlist_position: number
         }[]
       }
+      award_points: {
+        Args: {
+          p_entity_id?: string
+          p_entity_type?: string
+          p_points: number
+          p_reason: string
+        }
+        Returns: {
+          level: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "gamification_points"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      consent_parent_link: {
+        Args: { p_link_id: string }
+        Returns: {
+          consented_at: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          parent_user_id: string
+          relationship: string | null
+          youth_user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "parent_links"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       enroll_in_course: {
         Args: { p_course_id: string }
         Returns: {
@@ -1260,6 +1554,15 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      verify_certificate: {
+        Args: { p_code: string }
+        Returns: {
+          certificate_number: string
+          issued_at: string
+          title: string
+          valid: boolean
+        }[]
       }
     }
     Enums: {

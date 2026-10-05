@@ -200,3 +200,30 @@ export async function addOrganizationMember(formData:FormData) {
  await supabase.from("audit_logs").insert({actor_user_id:userId,action:"organization.member_upsert",entity_type:"organization_member",entity_id:organization_id,metadata:{member_user_id,role_name}});
  redirect("/admin/network");
 }
+
+
+export async function updateContent(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","content_manager"]);
+ const id=v(formData,"content_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status))throw new Error("invalid_content_update");
+ let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
+ const {error}=await supabase.from("content").update({title,slug,summary:summary||null,body:parsed as never,status:status as never,published_at:status==="published"?new Date().toISOString():null}).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.update",entity_type:"content",entity_id:id,metadata:{title,slug,status}});
+ redirect("/admin/content");
+}
+
+export async function updateEvent(formData:FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","program_manager"]);
+ const id=v(formData,"event_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),starts_at=d(formData,"starts_at");
+ if(!id||!title||!/^[a-z0-9-]+$/.test(slug)||!starts_at)throw new Error("invalid_event_update");
+ const {error}=await supabase.from("events").update({
+   title,slug,summary:v(formData,"summary")||null,description:v(formData,"description")||null,
+   starts_at,ends_at:d(formData,"ends_at"),venue_name:v(formData,"venue_name")||null,
+   venue_address:v(formData,"venue_address")||null,city:v(formData,"city")||null,
+   capacity:n(formData,"capacity"),program_id:v(formData,"program_id")||null,is_public:v(formData,"is_public")!=="false"
+ }).eq("id",id);
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"event.update",entity_type:"event",entity_id:id,metadata:{title,slug}});
+ redirect("/admin/events");
+}

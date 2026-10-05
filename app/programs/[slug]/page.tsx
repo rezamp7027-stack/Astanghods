@@ -38,6 +38,12 @@ export default async function ProgramDetailPage({ params }: Props) {
   const program = data as Program | null;
   if (!program) notFound();
 
+  const { data: claims } = await supabase.auth.getClaims();
+  const userId = claims?.claims?.sub ? String(claims.claims.sub) : null;
+  const { data: myRegistration } = userId
+    ? await supabase.from("registrations").select("status").eq("program_id", program.id).eq("user_id", userId).maybeSingle()
+    : { data: null };
+
   return (
     <>
       <SiteHeader />
@@ -62,7 +68,7 @@ export default async function ProgramDetailPage({ params }: Props) {
           <aside className="detail-card sticky">
             <h2>ثبت‌نام</h2>
             <p>ثبت‌نام با کنترل ظرفیت انجام می‌شود. در صورت تکمیل ظرفیت، سامانه شما را در صف انتظار قرار می‌دهد.</p>
-            <RegistrationButton programId={program.id} />
+            <RegistrationButton programId={program.id} initialStatus={myRegistration?.status ?? null} />
             {program.registration_close_at && (
               <div className="notice">مهلت ثبت‌نام: {new Date(program.registration_close_at).toLocaleDateString("fa-IR")}</div>
             )}

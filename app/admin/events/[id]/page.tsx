@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireStaff } from "@/lib/auth";
 import { updateEvent } from "@/app/admin/actions";
-import { createClient } from "@/lib/supabase/server";
 
 export const dynamic="force-dynamic";
 

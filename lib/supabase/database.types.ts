@@ -188,10 +188,16 @@ export type Database = {
           content_type: string
           created_at: string
           id: string
+          is_historical: boolean
           published_at: string | null
           slug: string
+          source_confidence: string | null
+          source_published_at: string | null
+          source_type: string | null
+          source_url: string | null
           status: Database["public"]["Enums"]["content_status"]
           summary: string | null
+          tags: string[]
           title: string
           updated_at: string
         }
@@ -201,10 +207,16 @@ export type Database = {
           content_type?: string
           created_at?: string
           id?: string
+          is_historical?: boolean
           published_at?: string | null
           slug: string
+          source_confidence?: string | null
+          source_published_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           summary?: string | null
+          tags?: string[]
           title: string
           updated_at?: string
         }
@@ -214,10 +226,16 @@ export type Database = {
           content_type?: string
           created_at?: string
           id?: string
+          is_historical?: boolean
           published_at?: string | null
           slug?: string
+          source_confidence?: string | null
+          source_published_at?: string | null
+          source_type?: string | null
+          source_url?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           summary?: string | null
+          tags?: string[]
           title?: string
           updated_at?: string
         }
@@ -261,8 +279,12 @@ export type Database = {
           created_by: string | null
           description: string | null
           id: string
+          is_historical: boolean
           is_published: boolean
           slug: string
+          source_confidence: string | null
+          source_type: string | null
+          source_url: string | null
           summary: string | null
           title: string
           updated_at: string
@@ -272,8 +294,12 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          is_historical?: boolean
           is_published?: boolean
           slug: string
+          source_confidence?: string | null
+          source_type?: string | null
+          source_url?: string | null
           summary?: string | null
           title: string
           updated_at?: string
@@ -283,8 +309,12 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           id?: string
+          is_historical?: boolean
           is_published?: boolean
           slug?: string
+          source_confidence?: string | null
+          source_type?: string | null
+          source_url?: string | null
           summary?: string | null
           title?: string
           updated_at?: string
@@ -1223,6 +1253,7 @@ export type Database = {
           description: string | null
           end_at: string | null
           id: string
+          is_historical: boolean
           location_name: string | null
           program_type: string
           province_id: string | null
@@ -1230,6 +1261,9 @@ export type Database = {
           registration_close_at: string | null
           registration_open_at: string | null
           slug: string
+          source_confidence: string | null
+          source_type: string | null
+          source_url: string | null
           start_at: string | null
           status: Database["public"]["Enums"]["program_status"]
           summary: string | null
@@ -1247,6 +1281,7 @@ export type Database = {
           description?: string | null
           end_at?: string | null
           id?: string
+          is_historical?: boolean
           location_name?: string | null
           program_type?: string
           province_id?: string | null
@@ -1254,6 +1289,9 @@ export type Database = {
           registration_close_at?: string | null
           registration_open_at?: string | null
           slug: string
+          source_confidence?: string | null
+          source_type?: string | null
+          source_url?: string | null
           start_at?: string | null
           status?: Database["public"]["Enums"]["program_status"]
           summary?: string | null
@@ -1271,6 +1309,7 @@ export type Database = {
           description?: string | null
           end_at?: string | null
           id?: string
+          is_historical?: boolean
           location_name?: string | null
           program_type?: string
           province_id?: string | null
@@ -1278,6 +1317,9 @@ export type Database = {
           registration_close_at?: string | null
           registration_open_at?: string | null
           slug?: string
+          source_confidence?: string | null
+          source_type?: string | null
+          source_url?: string | null
           start_at?: string | null
           status?: Database["public"]["Enums"]["program_status"]
           summary?: string | null
@@ -1391,6 +1433,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      research_sources: {
+        Row: {
+          accessed_at: string
+          confidence: string
+          created_at: string
+          id: string
+          is_public: boolean
+          metadata: Json
+          notes: string | null
+          publication_date: string | null
+          source_type: string
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          accessed_at?: string
+          confidence?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          metadata?: Json
+          notes?: string | null
+          publication_date?: string | null
+          source_type: string
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          accessed_at?: string
+          confidence?: string
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          metadata?: Json
+          notes?: string | null
+          publication_date?: string | null
+          source_type?: string
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
       }
       roles: {
         Row: {

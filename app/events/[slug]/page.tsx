@@ -85,12 +85,8 @@ export default async function EventDetailPage({ params }: Props) {
           <aside className="detail-card sticky">
             <h2>ثبت‌نام</h2>
             <p>{event.capacity ? `ظرفیت رویداد ${event.capacity} نفر است.` : "ثبت‌نام بدون ظرفیت اعلام‌شده."}</p>
-            {myReg ? (
-              <div className="notice">
-                وضعیت ثبت‌نام شما: <strong>{registrationLabels[myReg.status] ?? myReg.status}</strong>
-              </div>
-            ) : userId ? (
-              <EventRegistrationButton eventId={event.id} />
+            {userId ? (
+              <EventRegistrationButton eventId={event.id} initialStatus={myReg?.status ?? null} />
             ) : (
               <Link className="btn btn-primary" href={`/login?next=/events/${event.slug}`}>ورود برای ثبت‌نام</Link>
             )}

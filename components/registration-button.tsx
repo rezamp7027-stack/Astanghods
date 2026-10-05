@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-type Status = "pending" | "confirmed" | "waitlisted" | "cancelled" | null;
+type Status = string | null;
 
 const statusLabels: Record<string, string> = {
   pending: "در انتظار",
@@ -86,15 +86,17 @@ export function RegistrationButton({
     setMessage("ثبت‌نام شما لغو شد.");
   }
 
+  const cancellable = status !== null && ["pending", "confirmed", "waitlisted"].includes(status);
+
   if (status && status !== "cancelled") {
     return (
       <div className="form-stack">
         <div className="notice">
           وضعیت ثبت‌نام: <strong>{statusLabels[status] ?? status}</strong>
         </div>
-        <button className="btn btn-secondary" onClick={cancel} disabled={loading} type="button">
+        {cancellable && <button className="btn btn-secondary" onClick={cancel} disabled={loading} type="button">
           {loading ? "در حال پردازش…" : "لغو ثبت‌نام"}
-        </button>
+        </button>}
         {message && <div className={isError ? "notice error" : "notice"} role="status">{message}</div>}
       </div>
     );

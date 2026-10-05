@@ -18,7 +18,7 @@ export default async function EventDetailPage({ params }: Props) {
     .eq("is_public", true)
     .maybeSingle();
 
-  if (!event || new Date(event.starts_at).getTime() < Date.now()) notFound();
+  if (!event) notFound();
 
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub ? String(claims.claims.sub) : null;

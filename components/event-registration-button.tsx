@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 const labels: Record<string,string> = { pending:"در انتظار", confirmed:"تأییدشده", waitlisted:"صف انتظار", cancelled:"لغوشده" };
 
 export function EventRegistrationButton({ eventId, initialStatus = null }: { eventId:string; initialStatus?:string|null }) {
+  const router=useRouter();
   const [status,setStatus]=useState(initialStatus);
   const [loading,setLoading]=useState(false);
   const [message,setMessage]=useState<string|null>(null);
@@ -23,7 +25,7 @@ export function EventRegistrationButton({ eventId, initialStatus = null }: { eve
     setLoading(true);setMessage(null);setIsError(false);
     const supabase=createClient();
     const {data:claims}=await supabase.auth.getClaims();
-    if(!claims?.claims?.sub){window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);return;}
+    if(!claims?.claims?.sub){router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);return;}
     const {data,error}=await supabase.rpc("register_for_event",{p_event_id:eventId});
     setLoading(false);
     if(error){setIsError(true);setMessage(errorMessage(error.message));return;}

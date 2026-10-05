@@ -34,6 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/provinces` },
     { url: `${base}/certificate/verify` },
     { url: `${base}/search` },
+    { url: `${base}/research` },
     ...toUrls(base, "/programs/", (programs ?? []) as SlugRow[]),
     ...toUrls(base, "/events/", (events ?? []) as SlugRow[]),
     ...toUrls(base, "/courses/", (courses ?? []) as SlugRow[]),

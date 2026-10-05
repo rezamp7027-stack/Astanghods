@@ -3,13 +3,6 @@ import { createEvent, createEventSession, promoteEventWaitlist } from "@/app/adm
 
 export const dynamic = "force-dynamic";
 
-const labels: Record<string,string> = {
-  draft:"پیش‌نویس",
-  published:"منتشرشده",
-  confirmed:"تأییدشده",
-  waitlisted:"صف انتظار",
-};
-
 export default async function AdminEventsPage() {
   const { supabase } = await requireStaff();
   const [{ data: eventData }, { data: sessionData }, { data: registrationData }, { data: programData }] = await Promise.all([

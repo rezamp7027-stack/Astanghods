@@ -1,1 +1,0 @@
-import{publicData}from"@/lib/data";import{MenuBrowser}from"@/components/menu-browser";export const dynamic="force-dynamic";export default async function MenuPage(){const d=await publicData();return <MenuBrowser settings={d.settings} theme={d.theme} categories={d.categories} items={d.items} media={d.media}/>} 

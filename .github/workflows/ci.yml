@@ -1,20 +1,26 @@
-name: CI
-
+name: Static CI
 on:
   push:
-    branches: ["main","feat/**"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
-
 jobs:
-  quality:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install --no-audit --no-fund
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm run build
+      - name: Validate static site
+        run: |
+          test -s docs/index.html
+          test -s docs/app.js
+          test -s docs/styles.css
+          node --check docs/app.js
+          node --check docs/overrides.js
+          grep -q "tvoeeeggjypptlblyuyr" docs/app.js
+      - name: Validate migration files
+        run: |
+          test -d supabase/migrations
+          ls supabase/migrations/*.sql >/dev/null

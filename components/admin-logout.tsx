@@ -1,2 +1,0 @@
-"use client";import{createClient}from"@/lib/supabase/client";import{useRouter}from"next/navigation";
-export function AdminLogout(){const r=useRouter();return <button className="btn ghost small" onClick={async()=>{await createClient().auth.signOut();r.push("/admin/login");r.refresh()}}>خروج</button>}

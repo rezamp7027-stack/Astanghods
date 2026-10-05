@@ -1,3 +1,0 @@
-import{publicData}from"@/lib/data";import{Home}from"@/components/home";
-export const dynamic="force-dynamic";
-export default async function HomePage(){const d=await publicData();const schema={"@context":"https://schema.org","@type":"Restaurant","name":d.settings.name,"alternateName":d.settings.name_en,"description":d.settings.description,"telephone":d.settings.phone||undefined,"email":d.settings.email||undefined,"address":d.settings.address?{"@type":"PostalAddress","streetAddress":d.settings.address}:undefined,"sameAs":d.social.map(s=>s.url).filter(Boolean),url:process.env.NEXT_PUBLIC_SITE_URL||d.seo?.canonical_url||undefined};return <><script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(schema)}}/><Home data={d}/></>}

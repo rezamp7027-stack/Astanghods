@@ -1,2 +1,0 @@
-import{requireStaff}from"@/lib/roles";import{createClient}from"@/lib/supabase/server";import{ThemeEditor}from"@/components/theme-editor";
-export default async function ThemeAdmin(){await requireStaff(["super_admin"]);const s=await createClient();const{data}=await s.from("theme_settings").select("*").single();return <div><div className="admin-title"><div><span className="kicker">NOIR · THEME</span><h1>Theme Editor</h1></div></div>{data&&<ThemeEditor theme={data}/>}</div>}

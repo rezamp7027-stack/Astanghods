@@ -1,2 +1,0 @@
-import type{MetadataRoute}from"next";import{createClient}from"@/lib/supabase/server";
-export default async function sitemap():Promise<MetadataRoute.Sitemap>{const s=await createClient();const{data:x}=await s.from("seo_settings").select("canonical_url").single();const base=x?.canonical_url||process.env.NEXT_PUBLIC_SITE_URL||"http://localhost:3000";return[{url:base,lastModified:new Date()},{url:base+"/menu",lastModified:new Date()}]}

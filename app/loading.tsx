@@ -1,1 +1,0 @@
-export default function Loading(){return <main style={{minHeight:"100vh",display:"grid",placeItems:"center",background:"#0d0d0c",color:"#d6b978"}}><div style={{textAlign:"center"}}><div style={{fontSize:38,letterSpacing:".18em"}}>NOIR</div><p style={{color:"#9b9588"}}>در حال آماده‌سازی تجربه شما...</p></div></main>}

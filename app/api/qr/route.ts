@@ -1,2 +1,0 @@
-import{NextResponse}from"next/server";import QRCode from"qrcode";
-export async function GET(req:Request){const url=new URL(req.url).searchParams.get("url");if(!url)return NextResponse.json({error:"Missing URL"},{status:400});try{const svg=await QRCode.toString(url,{type:"svg",width:480,margin:2,errorCorrectionLevel:"M"});return new NextResponse(svg,{headers:{"content-type":"image/svg+xml","cache-control":"public,max-age=3600"}})}catch{return NextResponse.json({error:"QR generation failed"},{status:500})}}

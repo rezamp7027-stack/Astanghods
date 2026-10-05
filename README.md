@@ -1,24 +1,30 @@
 # NOIR Restaurant Platform
-Production-oriented luxury restaurant website, digital menu and Supabase-backed admin system.
 
-## Stack
-Next.js 16, React 19, Supabase SSR/Auth/Postgres/Storage, native responsive CSS, QR generation.
+A production-oriented restaurant website built as a static frontend on GitHub Pages with Supabase as the backend.
 
-## Environment
-Set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY and NEXT_PUBLIC_SITE_URL. Never expose a secret/service-role key to the browser.
+## Architecture
 
-## First admin
-Open /admin/setup, create the first account, then sign in. The first authenticated account can become Super Admin only while no user role exists.
+- GitHub Pages serves `docs/`
+- Supabase PostgreSQL stores restaurant content, menu, offers, gallery, reservations, analytics and audit logs
+- Supabase Auth handles admin login
+- Supabase Storage handles restaurant images
+- Row Level Security controls public vs staff access
+- GitHub Actions validates and deploys the static site
 
-## Real features
-Dynamic restaurant settings, bilingual menu, category/item CRUD, availability flags, media upload with browser WebP compression, protected Storage writes, gallery, offers, reservations, theme editor, SEO, QR menu, role management, audit log, analytics events and drag-and-drop ordering.
+## Admin
 
-## Database
-The Supabase project was reset to the restaurant schema by migration 20261005190000_restaurant_platform_reset. The previous youth-platform public application tables were removed; Auth users are preserved.
+Open the website and use **مدیریت**. Staff access is controlled by `user_roles` with `super_admin`, `manager`, and `editor`.
 
-## Run
-npm install
-npm run lint
-npm run typecheck
-npm run build
-npm run dev
+The first administrator can be bootstrapped with the `bootstrap_first_admin()` RPC after authenticating.
+
+## Deployment
+
+Every push to `main` runs the Pages workflow. The published site is:
+
+https://rezamp7027-stack.github.io/Astanghods/
+
+No Render service is required for this architecture.
+
+## Supabase
+
+Project URL is configured in `docs/app.js` and only the public publishable key is exposed there. Never place a service-role key in the frontend.

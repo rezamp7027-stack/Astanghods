@@ -64,3 +64,28 @@ export async function issueCertificate(formData: FormData) {
  await supabase.from("audit_logs").insert({actor_user_id:userId,action:"certificate.issue",entity_type:"certificate",entity_id:data.id,metadata:{user_id,title,certificate_number}});
  redirect("/admin/certificates");
 }
+
+export async function createEvent(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","program_manager"]);
+ const title=v(formData,"title"), slug=v(formData,"slug").toLowerCase(), starts_at=d(formData,"starts_at");
+ if(!title || !/^[a-z0-9-]+$/.test(slug) || !starts_at) throw new Error("invalid_event_payload");
+ const {data,error}=await supabase.from("events").insert({title,slug,summary:v(formData,"summary")||null,description:v(formData,"description")||null,starts_at,ends_at:d(formData,"ends_at"),venue_name:v(formData,"venue_name")||null,venue_address:v(formData,"venue_address")||null,city:v(formData,"city")||null,capacity:n(formData,"capacity"),is_public:v(formData,"is_public")!=="false",program_id:v(formData,"program_id")||null}).select("id").single();
+ if(error) throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"event.create",entity_type:"event",entity_id:data.id,metadata:{title,slug}});redirect("/admin/events");
+}
+export async function createEventSession(formData: FormData) {
+ const { supabase } = await requireRole(["super_admin","program_manager"]);
+ const event_id=v(formData,"event_id"),title=v(formData,"title"),starts_at=d(formData,"starts_at");
+ if(!event_id||!title||!starts_at)throw new Error("invalid_session_payload");
+ const {error}=await supabase.from("event_sessions").insert({event_id,title,starts_at,ends_at:d(formData,"ends_at"),location_name:v(formData,"location_name")||null,capacity:n(formData,"capacity")});if(error)throw new Error(error.message);redirect("/admin/events");
+}
+export async function createContent(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","content_manager"]);
+ const title=v(formData,"title"),slug=v(formData,"slug").toLowerCase(),summary=v(formData,"summary"),body=v(formData,"body"),status=v(formData,"status");
+ if(!title||!/^[a-z0-9-]+$/.test(slug)||!body||!["draft","published","archived"].includes(status))throw new Error("invalid_content_payload");
+ let parsed:unknown;try{parsed=JSON.parse(body);}catch{parsed={text:body};}
+ const {data,error}=await supabase.from("content").insert({title,slug,summary:summary||null,body:parsed as never,status:status as never,published_at:status==="published"?new Date().toISOString():null,author_id:userId}).select("id").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"content.create",entity_type:"content",entity_id:data.id,metadata:{title,slug,status}});redirect("/admin/content");
+}
+export async function dispatchNotifications() {
+ const { supabase } = await requireRole(["super_admin","crm_manager"]);
+ const {error}=await supabase.functions.invoke("dispatch-notifications",{body:{limit:50}});if(error)throw new Error(error.message);redirect("/admin/notifications");
+}

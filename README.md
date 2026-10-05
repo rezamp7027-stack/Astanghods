@@ -1,70 +1,88 @@
-# Astanghods Youth Platform
+# سامانه جامع جوانان آستان قدس رضوی
 
-سامانه جامع ارتباط، آموزش و شبکه‌سازی جوانان آستان قدس رضوی.
-
-این repository هسته وب‌اپلیکیشن پلتفرم را نگه می‌دارد. معماری از ابتدا برای mobile-first، RTL، امنیت داده، RLS و رشد مرحله‌ای طراحی شده است.
+پلتفرم موبایل‌محور برای ارتباط، آموزش، ثبت‌نام برنامه‌ها، شبکه‌سازی، خدمت داوطلبانه، رشد و تداوم تعامل جوانان.
 
 ## Stack
-
 - Next.js 16 + React 19 + TypeScript
-- Supabase PostgreSQL + Auth + Storage/Realtime
-- GitHub Actions برای CI
-- Temporal برای workflowهای بلندمدت در مراحل بعد
-- Auth0 برای SSO سازمانی در صورت نیاز تاییدشده
-- AI/NVIDIA در لایه‌های بعدی، با داده و محتوای کنترل‌شده
+- Supabase PostgreSQL + Auth + Storage + Realtime + RLS
+- GitHub + GitHub Actions
+- Supabase Edge Functions برای workerهای اعلان و Journey
+- NVIDIA NIM پشت abstraction سمت سرور
+- Engram برای ثبت وضعیت و تصمیمات معماری
 
-## اولین vertical slice
+## قابلیت‌های عملیاتی
+- Program discovery + registration + atomic capacity/waitlist
+- Event discovery + registration + capacity/waitlist
+- LMS: course/module/lesson/enrollment/progress
+- Youth dashboard: learning, attendance, certificates, growth, recommendations
+- Parent portal با consent واقعی
+- Mentor portal با assignment واقعی
+- Organization portal
+- Province network / استان من
+- Volunteer/service network
+- Content management + public content pages
+- Search
+- Digital certificate verification
+- Notifications + channel preferences + delivery queue
+- CRM analytics + Journeys
+- Support requests
+- Role management با محافظت از آخرین super_admin
+- Curated AI assistant با NVIDIA NIM
 
-ورود با لینک ایمیل → پروفایل → کشف برنامه‌ها → صفحه جزئیات → ثبت‌نام اتمیک → ظرفیت/صف انتظار → داشبورد «مسیر من»
+## مسیرهای اصلی
+Public: `/programs`, `/events`, `/courses`, `/content`, `/network`, `/provinces`, `/volunteer`, `/search`, `/certificate/verify`
 
-## مسیرهای فعلی
+User: `/dashboard`, `/dashboard/learning`, `/dashboard/growth`, `/dashboard/recommendations`, `/dashboard/attendance`, `/dashboard/certificates`, `/dashboard/consent`, `/dashboard/notifications`, `/dashboard/volunteer`, `/dashboard/assistant`, `/dashboard/support`
 
-- / صفحه اصلی
-- /programs کشف برنامه‌های منتشرشده
-- /programs/[slug] جزئیات برنامه و ثبت‌نام
-- /login ورود بدون رمز با OTP/Email Link
-- /auth/callback تکمیل نشست
-- /dashboard مسیر من
-- /dashboard/profile پروفایل
+Role portals: `/parent`, `/mentor`, `/organization`
 
-## Supabase
+Admin: `/admin` با مدیریت برنامه، رویداد، ثبت‌نام، حضور، گواهی، LMS، محتوا، مربی، والد، شبکه، CRM، Journey، اعلان، خدمت، تحلیل، کاربران و پشتیبانی.
 
-Project: `tvoeeeggjypptlblyuyr`
+## امنیت
+- RLS روی جداول exposed
+- Parent فقط youthهای linked + consented
+- Mentor فقط assignment فعال
+- Staff با app_role
+- privileged logic در private schema
+- public RPCها SECURITY INVOKER
+- no service_role / AI secret in browser
+- audit logs برای تغییرات مهم
+- certificate verification فقط خروجی safe و عمومی
+- AI فقط با context منتشرشده و بدون افشای داده خصوصی
 
-دو migration پایه در محیط Supabase اعمال شده‌اند و RLS برای جدول‌های public فعال است.
+## Workerها
+- `dispatch-notifications`
+- `run-journeys`
 
-در کلاینت فقط از publishable key استفاده کنید. secret/service_role هرگز نباید در browser یا فایل `.env.example` قرار بگیرد.
+هر دو با JWT محافظت شده‌اند. برای اجرای زمان‌بندی‌شده production باید از scheduler/Cron یا orchestration مثل Temporal استفاده شوند.
 
 ## Environment
+Public browser:
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
-```bash
-cp .env.example .env.local
-```
+Server-only:
+- NVIDIA_NIM_API_KEY
+- NVIDIA_NIM_BASE_URL
+- NVIDIA_NIM_MODEL
 
-سپس مقدار واقعی `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` را از Project Connect/API Keys تنظیم کنید.
+Worker secrets:
+- SUPABASE_URL
+- SUPABASE_SERVICE_ROLE_KEY
+- RESEND_API_KEY
+- MAIL_FROM
+- SMS_PROVIDER_URL
+- SMS_PROVIDER_TOKEN
 
-## Local development
+## Bootstrap مدیر
+پس از ایجاد اولین حساب کاربری، یک‌بار نقش `super_admin` را از مسیر مدیریتی/SQL امن تخصیص دهید. بعد از آن `/admin/users` مرجع مدیریت نقش‌هاست و حذف آخرین super_admin مسدود شده است.
 
+## Validation
 ```bash
 npm install
-npm run dev
-```
-
-اعتبارسنجی:
-
-```bash
 npm run typecheck
 npm run lint
 npm run build
 ```
 
-## Security baseline
-
-- RLS روی تمام جدول‌های exposed در schema public
-- کنترل دسترسی مبتنی بر role بدون اتکا به user-editable metadata
-- ثبت consent و audit log برای گسترش‌های بعدی
-- privileged functions در schema خصوصی
-- محدودسازی دسترسی مربی/والد به رابطه واقعی
-- عدم نگهداری secret در کلاینت
-
-این repository فعلاً آغاز فاز Foundation است؛ ماژول‌های CRM، LMS کامل، شبکه استانی، خدمت، gamification، Temporal و AI بعد از تثبیت هسته اضافه می‌شوند.
+Merge به `main` فقط بعد از سبز شدن Typecheck/Lint/Build و بررسی Supabase security advisor انجام شود.

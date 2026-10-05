@@ -43,7 +43,8 @@ export function EventRegistrationButton({ eventId, initialStatus = null }: { eve
     setStatus("cancelled");setMessage("ثبت‌نام شما لغو شد.");
   }
 
-  if(status&&status!=="cancelled") return <div className="form-stack"><div className="notice">وضعیت ثبت‌نام: <strong>{labels[status]??status}</strong></div><button className="btn btn-secondary" type="button" onClick={cancel} disabled={loading}>{loading?"در حال پردازش…":"لغو ثبت‌نام"}</button>{message&&<div className={isError?"notice error":"notice"} role="status">{message}</div>}</div>;
+  const cancellable=status!==null && ["pending","confirmed","waitlisted"].includes(status);
+  if(status&&status!=="cancelled") return <div className="form-stack"><div className="notice">وضعیت ثبت‌نام: <strong>{labels[status]??status}</strong></div>{cancellable&&<button className="btn btn-secondary" type="button" onClick={cancel} disabled={loading}>{loading?"در حال پردازش…":"لغو ثبت‌نام"}</button>}{message&&<div className={isError?"notice error":"notice"} role="status">{message}</div>}</div>;
 
   return <div className="form-stack"><button className="btn btn-primary" type="button" onClick={register} disabled={loading}>{loading?"در حال ثبت‌نام…":status==="cancelled"?"ثبت‌نام دوباره":"ثبت‌نام در رویداد"}</button>{status==="cancelled"&&!message?<div className="notice">ثبت‌نام قبلی شما لغو شده است.</div>:null}{message&&<div className={isError?"notice error":"notice"} role="status" aria-live="polite">{message}</div>}</div>;
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { RegistrationButton } from "@/components/registration-button";
@@ -23,6 +24,9 @@ type Program = {
   end_at: string | null;
   location_name: string | null;
   city: string | null;
+  is_historical: boolean;
+  source_url: string | null;
+  source_confidence: string | null;
 };
 
 export default async function ProgramDetailPage({ params }: Props) {
@@ -32,17 +36,21 @@ export default async function ProgramDetailPage({ params }: Props) {
     .from("programs")
     .select("*")
     .eq("slug", slug)
-    .eq("status", "published")
-    .single();
+    .in("status", ["published", "running", "registration_closed", "completed"])
+    .maybeSingle();
 
   const program = data as Program | null;
   if (!program) notFound();
 
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub ? String(claims.claims.sub) : null;
-  const { data: myRegistration } = userId
+  const { data: myRegistration } = !program.is_historical && userId
     ? await supabase.from("registrations").select("status").eq("program_id", program.id).eq("user_id", userId).maybeSingle()
     : { data: null };
+
+  const ageText = program.audience_min_age === null && program.audience_max_age === null
+    ? "همه سنین اعلام‌شده"
+    : `${program.audience_min_age ?? "همه"}${program.audience_max_age !== null ? ` تا ${program.audience_max_age}` : ""} سال`;
 
   return (
     <>
@@ -50,13 +58,10 @@ export default async function ProgramDetailPage({ params }: Props) {
       <main className="page">
         <div className="container detail-grid">
           <article className="detail-card">
-            <span className="status">برنامه منتشرشده</span>
+            <span className="status">{program.is_historical ? "رکورد آرشیوی" : "برنامه منتشرشده"}</span>
             <h1>{program.title}</h1>
             <p className="lead">{program.summary}</p>
-            <div className="callout">
-              <strong>گروه سنی</strong><br />
-              {program.audience_min_age ?? "همه"}{program.audience_max_age ? ` تا ${program.audience_max_age}` : ""} سال
-            </div>
+            <div className="callout"><strong>گروه سنی</strong><br />{ageText}</div>
             <h2>درباره برنامه</h2>
             <p>{program.description ?? "توضیحات کامل این برنامه هنوز ثبت نشده است."}</p>
             <div className="tag-row">
@@ -64,13 +69,35 @@ export default async function ProgramDetailPage({ params }: Props) {
               {program.city && <span className="tag">{program.city}</span>}
               {program.location_name && <span className="tag">{program.location_name}</span>}
             </div>
+            {program.is_historical && (
+              <div className="notice" style={{ marginTop: 18 }}>
+                این رکورد بخشی از آرشیو پژوهشی مؤسسه است و به‌عنوان برنامه جاری یا قابل ثبت‌نام نمایش داده نمی‌شود.
+              </div>
+            )}
+            {program.source_url && (
+              <a className="btn btn-secondary" href={program.source_url} target="_blank" rel="noreferrer" style={{ marginTop: 18 }}>
+                مشاهده منبع
+              </a>
+            )}
           </article>
+
           <aside className="detail-card sticky">
-            <h2>ثبت‌نام</h2>
-            <p>ثبت‌نام با کنترل ظرفیت انجام می‌شود. در صورت تکمیل ظرفیت، سامانه شما را در صف انتظار قرار می‌دهد.</p>
-            <RegistrationButton programId={program.id} initialStatus={myRegistration?.status ?? null} />
-            {program.registration_close_at && (
-              <div className="notice">مهلت ثبت‌نام: {new Date(program.registration_close_at).toLocaleDateString("fa-IR")}</div>
+            {program.is_historical ? (
+              <>
+                <h2>آرشیو</h2>
+                <p>اطلاعات این برنامه برای مستندسازی سوابق مؤسسه نگهداری شده است.</p>
+                {program.source_confidence && <div className="notice">اعتماد منبع: <strong>{program.source_confidence}</strong></div>}
+                <Link href="/programs" className="btn btn-secondary">بازگشت به برنامه‌ها</Link>
+              </>
+            ) : (
+              <>
+                <h2>ثبت‌نام</h2>
+                <p>ثبت‌نام با کنترل ظرفیت انجام می‌شود. در صورت تکمیل ظرفیت، سامانه شما را در صف انتظار قرار می‌دهد.</p>
+                <RegistrationButton programId={program.id} initialStatus={myRegistration?.status ?? null} />
+                {program.registration_close_at && (
+                  <div className="notice">مهلت ثبت‌نام: {new Date(program.registration_close_at).toLocaleDateString("fa-IR")}</div>
+                )}
+              </>
             )}
           </aside>
         </div>

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 import { createClient } from "@/lib/supabase/server";
 
@@ -30,10 +31,11 @@ export default async function EventsPage() {
       <main className="page">
         <div className="container">
           <div className="page-head">
+            <span className="eyebrow">کشف</span>
             <h1>رویدادها</h1>
             <p>برنامه‌های حضوری و رویدادهای پیش‌رو را یک‌جا دنبال کن.</p>
           </div>
-          {error ? <div className="notice error">خطا در دریافت رویدادها.</div> : null}
+          {error ? <div className="notice error" role="alert">خطا در دریافت رویدادها.</div> : null}
           {!events?.length ? (
             <div className="empty">در حال حاضر رویداد عمومی آینده‌ای ثبت نشده است.</div>
           ) : (
@@ -53,7 +55,8 @@ export default async function EventsPage() {
                     {event.capacity && <span>ظرفیت {event.capacity} نفر</span>}
                   </div>
                   <div className="bottom">
-                    <span className="tag">ثبت‌نام از صفحه برنامه</span>
+                    <span className="tag">ثبت‌نام آنلاین</span>
+                    <Link className="btn btn-secondary" href={`/events/${event.slug}`}>جزئیات و ثبت‌نام</Link>
                   </div>
                 </article>
               ))}

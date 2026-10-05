@@ -52,7 +52,7 @@ export default async function EventsPage() {
     .order("starts_at", { ascending: false });
 
   const rows = (events ?? []) as EventRow[];
-  const now = Date.now();
+  const now = new Date().getTime();
   const upcoming = rows.filter((event) => new Date(event.starts_at).getTime() >= now).reverse();
   const historical = rows.filter((event) => new Date(event.starts_at).getTime() < now);
 

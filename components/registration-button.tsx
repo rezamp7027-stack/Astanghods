@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 type Status = string | null;
@@ -27,6 +28,7 @@ export function RegistrationButton({
   programId: string;
   initialStatus?: Status;
 }) {
+  const router = useRouter();
   const [status, setStatus] = useState<Status>(initialStatus);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -41,7 +43,7 @@ export function RegistrationButton({
     const supabase = createClient();
     const { data: claimsData } = await supabase.auth.getClaims();
     if (!claimsData?.claims?.sub) {
-      window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
       return;
     }
 

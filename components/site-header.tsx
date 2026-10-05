@@ -8,7 +8,7 @@ export function SiteHeader() {
           <span className="brand-mark" aria-hidden="true">ر</span><span>جوانان رضوی</span>
         </Link>
         <nav className="nav-links" aria-label="ناوبری اصلی">
-          <Link href="/programs">برنامه‌ها</Link><Link href="/courses">آموزش</Link><Link href="/events">رویدادها</Link><Link href="/network">شبکه</Link><Link href="/volunteer">خدمت</Link><Link href="/search">جست‌وجو</Link><Link href="/dashboard">مسیر من</Link>
+          <Link href="/programs">برنامه‌ها</Link><Link href="/courses">آموزش</Link><Link href="/events">رویدادها</Link><Link href="/network">شبکه</Link><Link href="/provinces">استان‌ها</Link><Link href="/volunteer">خدمت</Link><Link href="/search">جست‌وجو</Link><Link href="/dashboard">مسیر من</Link><Link href="/dashboard/assistant">دستیار</Link>
         </nav>
         <div className="nav-actions">
           <Link href="/certificate/verify" className="btn btn-secondary">استعلام گواهی</Link>

@@ -11,3 +11,56 @@ export async function createProgram(fd:FormData){const {supabase,userId}=await r
 const registrationStatuses:RegistrationStatus[]=["pending","confirmed","waitlisted","cancelled","rejected","completed"];
 export async function updateRegistrationStatus(fd:FormData){const {supabase,userId}=await requireRole(["super_admin","program_manager","crm_manager"]);const id=v(fd,"registration_id"),status=v(fd,"status") as RegistrationStatus;if(!id||!registrationStatuses.includes(status))throw new Error("invalid_registration_update");const {data,error}=await supabase.from("registrations").update({status}).eq("id",id).select("program_id,user_id,status").single();if(error)throw new Error(error.message);await supabase.from("audit_logs").insert({actor_user_id:userId,action:"registration.status_change",entity_type:"registration",entity_id:id,metadata:{program_id:data.program_id,user_id:data.user_id,status}});redirect("/admin/registrations");}
 export async function promoteWaitlist(fd:FormData){const {supabase}=await requireRole(["super_admin","program_manager","crm_manager"]);const programId=v(fd,"program_id");if(!programId)throw new Error("program_required");const {error}=await supabase.rpc("admin_promote_waitlist",{p_program_id:programId});if(error)throw new Error(error.message);redirect("/admin/registrations");}
+
+
+export async function createOrganization(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","regional_manager"]);
+ const name=v(formData,"name"), slug=v(formData,"slug").toLowerCase();
+ if(!name || !/^[a-z0-9-]+$/.test(slug)) throw new Error("invalid_organization_payload");
+ const {data,error}=await supabase.from("organizations").insert({name,slug,organization_type:v(formData,"organization_type")||"school",city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null}).select("id").single();
+ if(error) throw new Error(error.message);
+ await supabase.from("organization_directory").insert({organization_id:data.id,name,slug,organization_type:v(formData,"organization_type")||"school",city:v(formData,"city")||null,website:v(formData,"website")||null,description:v(formData,"description")||null});
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"organization.create",entity_type:"organization",entity_id:data.id,metadata:{name,slug}});
+ redirect("/admin/network");
+}
+
+export async function assignMentor(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","mentor_manager"]);
+ const mentor_user_id=v(formData,"mentor_user_id"), youth_user_id=v(formData,"youth_user_id"), program_id=v(formData,"program_id");
+ if(!mentor_user_id || !youth_user_id || mentor_user_id===youth_user_id) throw new Error("invalid_mentor_assignment");
+ const {data,error}=await supabase.from("mentor_assignments").insert({mentor_user_id,youth_user_id,program_id:program_id||null,assigned_by:userId}).select("id").single();
+ if(error) throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"mentor.assign",entity_type:"mentor_assignment",entity_id:data.id,metadata:{mentor_user_id,youth_user_id,program_id:program_id||null}});
+ redirect("/admin/mentors");
+}
+
+export async function createParentLink(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","mentor_manager"]);
+ const parent_user_id=v(formData,"parent_user_id"), youth_user_id=v(formData,"youth_user_id"), relationship=v(formData,"relationship")||"parent";
+ if(!parent_user_id || !youth_user_id || parent_user_id===youth_user_id) throw new Error("invalid_parent_link");
+ const {data,error}=await supabase.from("parent_links").insert({parent_user_id,youth_user_id,relationship,is_active:true}).select("id").single();
+ if(error) throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"parent.link_create",entity_type:"parent_link",entity_id:data.id,metadata:{parent_user_id,youth_user_id,relationship}});
+ redirect("/admin/parents");
+}
+
+export async function markAttendance(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","program_manager","mentor_manager"]);
+ const session_id=v(formData,"session_id"), user_id=v(formData,"user_id");
+ const status=v(formData,"status");
+ const allowed=["present","absent","late","excused"];
+ if(!session_id || !user_id || !allowed.includes(status)) throw new Error("invalid_attendance_payload");
+ const {error}=await supabase.from("attendance").upsert({session_id,user_id,status,checked_at:new Date().toISOString(),marked_by:userId,notes:v(formData,"notes")||null},{onConflict:"session_id,user_id"});
+ if(error) throw new Error(error.message);
+ redirect("/admin/attendance");
+}
+
+export async function issueCertificate(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","program_manager","content_manager"]);
+ const user_id=v(formData,"user_id"),title=v(formData,"title"),certificate_number=v(formData,"certificate_number"),course_id=v(formData,"course_id"),program_id=v(formData,"program_id");
+ if(!user_id || !title || !certificate_number || (!course_id&&!program_id)) throw new Error("invalid_certificate_payload");
+ const {data,error}=await supabase.from("certificates").insert({user_id,title,certificate_number,course_id:course_id||null,program_id:program_id||null}).select("id").single();
+ if(error) throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"certificate.issue",entity_type:"certificate",entity_id:data.id,metadata:{user_id,title,certificate_number}});
+ redirect("/admin/certificates");
+}

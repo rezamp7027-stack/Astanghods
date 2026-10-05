@@ -4,6 +4,10 @@ import type { FormEvent } from "react";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+function safeNextPath(value: string) {
+  return value.startsWith("/") && !value.startsWith("//") ? value : "/dashboard";
+}
+
 export function LoginForm({ nextPath }: { nextPath: string }) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -12,14 +16,22 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (loading) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || normalizedEmail.length > 254) {
+      setError("ایمیل واردشده معتبر نیست.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
+      email: normalizedEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextPath)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(nextPath))}`,
       },
     });
 
@@ -32,16 +44,16 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
   };
 
   if (sent) {
-    return <div className="notice">لینک ورود ارسال شد. صندوق ایمیل را بررسی کنید.</div>;
+    return <div className="notice" role="status">لینک ورود ارسال شد. صندوق ایمیل را بررسی کنید.</div>;
   }
 
   return (
     <form onSubmit={submit} className="form-stack">
       <label className="form-label" htmlFor="email">
         ایمیل
-        <input id="email" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" dir="ltr" />
+        <input id="email" className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={254} autoComplete="email" dir="ltr" />
       </label>
-      {error && <div className="notice error">{error}</div>}
+      {error && <div className="notice error" role="alert">{error}</div>}
       <button className="btn btn-primary" disabled={loading} type="submit">
         {loading ? "در حال ارسال…" : "ارسال لینک ورود"}
       </button>

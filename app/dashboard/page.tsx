@@ -30,7 +30,7 @@ export default async function DashboardPage(){
       <div className="brand"><span className="brand-mark" aria-hidden="true">ر</span><span>{displayName}</span></div>
       <div className="side-links">
         <Link href="/dashboard">نمای کلی</Link><Link href="/dashboard/profile">پروفایل</Link><Link href="/dashboard/learning">یادگیری</Link>
-        <Link href="/dashboard/growth">مسیر رشد</Link><Link href="/dashboard/recommendations">پیشنهادها</Link><Link href="/dashboard/attendance">حضور و غیاب</Link>
+        <Link href="/dashboard/growth">مسیر رشد</Link><Link href="/dashboard/recommendations">پیشنهادها</Link><Link href="/dashboard/events">رویدادهای من</Link><Link href="/dashboard/attendance">حضور و غیاب</Link>
         <Link href="/dashboard/certificates">گواهی‌ها</Link><Link href="/dashboard/consent">رضایت والد</Link><Link href="/programs">برنامه‌ها</Link><Link href="/events">رویدادها</Link><LogoutButton/>
       </div>
     </aside>

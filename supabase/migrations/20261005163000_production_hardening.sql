@@ -42,3 +42,33 @@ drop policy if exists sections_access on public.site_sections;
 drop policy if exists socials_access on public.social_links;
 drop policy if exists offers_access on public.special_offers;
 drop policy if exists theme_access on public.theme_settings;
+
+-- Public content is publicly readable for anonymous visitors; authenticated staff
+-- already have role-scoped staff policies, so do not duplicate those SELECT paths.
+alter policy gallery_public_read on public.gallery_items to anon;
+alter policy media_public_read on public.media to anon;
+alter policy categories_public_read on public.menu_categories to anon;
+alter policy items_public_read on public.menu_items to anon;
+alter policy navigation_public_read on public.navigation_items to anon;
+alter policy settings_public_read on public.restaurant_settings to anon;
+alter policy seo_public_read on public.seo_settings to anon;
+alter policy sections_public_read on public.site_sections to anon;
+alter policy socials_public_read on public.social_links to anon;
+alter policy offers_public_read on public.special_offers to anon;
+alter policy theme_public_read on public.theme_settings to anon;
+
+drop policy if exists profiles_admin_read on public.profiles;
+drop policy if exists profiles_self_read on public.profiles;
+create policy profiles_select on public.profiles
+for select to authenticated
+using (((select auth.uid()) = id) or (select private.has_role('super_admin'::text)));
+
+drop policy if exists user_roles_self_read on public.user_roles;
+drop policy if exists user_roles_super_admin_all on public.user_roles;
+create policy user_roles_select on public.user_roles
+for select to authenticated
+using (((select auth.uid()) = user_id) or (select private.has_role('super_admin'::text)));
+create policy user_roles_super_admin_manage on public.user_roles
+for all to authenticated
+using ((select private.has_role('super_admin'::text)))
+with check ((select private.has_role('super_admin'::text)));

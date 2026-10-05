@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { requireStaff } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
 import { createProgram } from "@/app/admin/actions";
 
 export const dynamic = "force-dynamic";

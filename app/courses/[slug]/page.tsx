@@ -1,5 +1,5 @@
-import { notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { CourseEnrollButton } from "@/components/course-enroll-button";
 import { createClient } from "@/lib/supabase/server";
@@ -13,10 +13,10 @@ export default async function CourseDetailPage({ params }: Props) {
   const supabase = await createClient();
   const { data: course } = await supabase
     .from("courses")
-    .select("id,title,slug,summary,description")
+    .select("id,title,slug,summary,description,is_historical,source_url,source_confidence")
     .eq("slug", slug)
     .eq("is_published", true)
-    .single();
+    .maybeSingle();
 
   if (!course) notFound();
 
@@ -32,10 +32,11 @@ export default async function CourseDetailPage({ params }: Props) {
       <main className="page">
         <div className="container detail-grid">
           <article className="detail-card">
-            <span className="status">دوره آموزشی</span>
+            <span className="status">{course.is_historical ? "رکورد آرشیوی" : "دوره آموزشی"}</span>
             <h1>{course.title}</h1>
             <p className="lead">{course.summary}</p>
             <p>{course.description}</p>
+
             <h2>سرفصل‌ها</h2>
             <div className="registration-list">
               {(modules ?? []).map((module) => (
@@ -52,16 +53,40 @@ export default async function CourseDetailPage({ params }: Props) {
                   </div>
                 </section>
               ))}
-              {!modules?.length && <div className="empty">سرفصل این دوره هنوز تکمیل نشده است.</div>}
+              {!modules?.length && <div className="empty">برای این رکورد هنوز سرفصل یا درس عمومی ثبت نشده است.</div>}
             </div>
+
+            {course.is_historical && (
+              <div className="notice" style={{ marginTop: 18 }}>
+                این دوره بخشی از آرشیو پژوهشی مؤسسه است و ثبت‌نام فعلی برای آن فعال نیست.
+              </div>
+            )}
+            {course.source_url && (
+              <a className="btn btn-secondary" href={course.source_url} target="_blank" rel="noreferrer" style={{ marginTop: 18 }}>
+                مشاهده منبع رسمی
+              </a>
+            )}
           </article>
+
           <aside className="detail-card sticky">
-            <h2>مسیر یادگیری</h2>
-            <p>دوره را به حساب خود اضافه کن تا پیشرفت درس‌ها و وضعیت تکمیل را در «مسیر من» ببینی.</p>
-            <CourseEnrollButton courseId={course.id} />
+            {course.is_historical ? (
+              <>
+                <h2>آرشیو آموزشی</h2>
+                <p>این صفحه برای ثبت سابقه و محتوای پژوهش‌شده نگهداری می‌شود.</p>
+                {course.source_confidence && <div className="notice">اعتماد منبع: <strong>{course.source_confidence}</strong></div>}
+                <Link className="btn btn-secondary" href="/courses">بازگشت به آموزش</Link>
+              </>
+            ) : (
+              <>
+                <h2>مسیر یادگیری</h2>
+                <p>دوره را به حساب خود اضافه کن تا پیشرفت درس‌ها و وضعیت تکمیل را در «مسیر من» ببینی.</p>
+                <CourseEnrollButton courseId={course.id} />
+              </>
+            )}
           </aside>
         </div>
       </main>
+      <footer className="footer"><div className="container">سامانه جامع جوانان آستان قدس رضوی</div></footer>
     </>
   );
 }

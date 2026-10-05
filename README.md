@@ -30,7 +30,7 @@
 - Curated AI assistant با NVIDIA NIM
 
 ## مسیرهای اصلی
-Public: `/programs`, `/events`, `/courses`, `/content`, `/network`, `/provinces`, `/volunteer`, `/search`, `/certificate/verify`
+Public: `/programs`, `/events`, `/courses`, `/content`, `/network`, `/provinces`, `/volunteer`, `/research`, `/search`, `/certificate/verify`
 
 User: `/dashboard`, `/dashboard/learning`, `/dashboard/growth`, `/dashboard/recommendations`, `/dashboard/attendance`, `/dashboard/certificates`, `/dashboard/consent`, `/dashboard/notifications`, `/dashboard/volunteer`, `/dashboard/assistant`, `/dashboard/support`
 
@@ -76,6 +76,12 @@ Worker secrets:
 
 ## Bootstrap مدیر
 پس از ایجاد اولین حساب کاربری، یک‌بار نقش `super_admin` را از مسیر مدیریتی/SQL امن تخصیص دهید. بعد از آن `/admin/users` مرجع مدیریت نقش‌هاست و حذف آخرین super_admin مسدود شده است.
+
+## Research archive
+- `supabase/seed/aqr_javanan_research.sql` seed idempotent برای داده‌های پژوهش‌شده مؤسسه.
+- `/research` فهرست عمومی منابع، نوع منبع و سطح اعتماد را نمایش می‌دهد.
+- رکوردهای تاریخی با `is_historical` از برنامه‌ها و دوره‌های جاری جدا می‌مانند.
+- آمار تاریخی به‌عنوان آمار جاری نمایش داده نمی‌شود.
 
 ## Validation
 ```bash

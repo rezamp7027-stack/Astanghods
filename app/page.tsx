@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
+import { createClient } from "@/lib/supabase/server";
 
 const pillars = [
   ["برنامه‌ها و مسیر رشد", "برنامه مناسب خودت را پیدا کن و مسیرت را قدم‌به‌قدم ادامه بده."],
@@ -7,7 +8,24 @@ const pillars = [
   ["شبکه جوانان رضوی", "با جوانان، مربیان و مجموعه‌های هم‌مسیر در ارتباط باش."],
 ];
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const supabase = await createClient();
+  const [programs, courses, events, archive] = await Promise.all([
+    supabase.from("programs").select("*", { count: "exact", head: true }).eq("status", "published").eq("is_historical", false),
+    supabase.from("courses").select("*", { count: "exact", head: true }).eq("is_published", true).eq("is_historical", false),
+    supabase.from("events").select("*", { count: "exact", head: true }).eq("is_public", true).gte("starts_at", new Date().toISOString()),
+    supabase.from("content").select("*", { count: "exact", head: true }).eq("status", "published").eq("is_historical", true),
+  ]);
+
+  const stats = [
+    ["برنامه جاری", programs.count ?? 0],
+    ["دوره فعال", courses.count ?? 0],
+    ["رویداد پیش‌رو", events.count ?? 0],
+    ["رکورد آرشیوی", archive.count ?? 0],
+  ];
+
   return (
     <>
       <SiteHeader />
@@ -23,25 +41,52 @@ export default function HomePage() {
                 <Link href="/login" className="btn btn-secondary">ورود به مسیر من</Link>
               </div>
             </div>
-            <aside className="hero-card" aria-label="نمای کلی سامانه">
+            <aside className="hero-card" aria-label="نمای واقعی سامانه">
               <div>
-                <span className="eyebrow">مسیر من</span>
+                <span className="eyebrow">وضعیت سامانه</span>
                 <h2>یک حساب، یک مسیر</h2>
-                <p className="lead" style={{fontSize:15}}>ثبت‌نام‌ها، دوره‌ها و فعالیت‌های مهمت را یک‌جا ببین.</p>
+                <p className="lead" style={{ fontSize: 15 }}>اعداد زیر از داده‌های واقعی سامانه خوانده می‌شوند، نه از اسلایدی که کسی سال‌ها پیش ساخته باشد.</p>
               </div>
               <div>
-                <div className="hero-stat"><span>برنامه‌های در دسترس</span><strong>+ برنامه</strong></div>
-                <div className="hero-stat"><span>ثبت‌نام هوشمند</span><strong>ظرفیت + صف</strong></div>
-                <div className="hero-stat"><span>ادامه ارتباط</span><strong>۹۰ روز</strong></div>
+                {stats.map(([label, value]) => (
+                  <div className="hero-stat" key={label}>
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
               </div>
             </aside>
           </div>
         </section>
         <section className="section">
           <div className="container">
-            <div className="section-head"><div><h2>یک سایت خبری دیگر نیست</h2><p>هسته محصول برای ارتباط و رشد طراحی شده، نه فقط انتشار خبر.</p></div></div>
+            <div className="section-head">
+              <div>
+                <h2>یک سایت خبری دیگر نیست</h2>
+                <p>هسته محصول برای ارتباط و رشد طراحی شده، نه فقط انتشار خبر.</p>
+              </div>
+            </div>
             <div className="cards">
-              {pillars.map(([title, text]) => <article className="card" key={title}><h3>{title}</h3><p>{text}</p><span className="tag">در هسته پلتفرم</span></article>)}
+              {pillars.map(([title, text]) => (
+                <article className="card" key={title}>
+                  <h3>{title}</h3>
+                  <p>{text}</p>
+                  <span className="tag">در هسته پلتفرم</span>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="section">
+          <div className="container">
+            <div className="callout">
+              <strong>آرشیو پژوهشی مؤسسه</strong>
+              <p>رکوردهای تاریخی مؤسسه جدا از برنامه‌های جاری نگهداری شده‌اند تا سابقه فعالیت‌ها با آمار و برنامه‌های امروز قاطی نشود.</p>
+              <div className="button-row">
+                <Link href="/content" className="btn btn-secondary">مشاهده آرشیو</Link>
+                <Link href="/search" className="btn btn-secondary">جست‌وجوی سامانه</Link>
+                <Link href="/research" className="btn btn-secondary">منابع پژوهش</Link>
+              </div>
             </div>
           </div>
         </section>

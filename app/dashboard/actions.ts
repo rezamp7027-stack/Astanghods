@@ -16,3 +16,7 @@ export async function applyVolunteer(formData:FormData){
  const {error}=await supabase.rpc("apply_volunteer_opportunity",{p_opportunity_id:opportunityId});if(error)throw new Error(error.message);
  redirect("/dashboard/volunteer");
 }
+
+
+export async function markNotificationRead(formData:FormData){const id=formData.get("notification_id");if(typeof id!=="string"||!id)throw new Error("notification_required");const supabase=await createClient();const {data:claims}=await supabase.auth.getClaims();if(!claims?.claims?.sub)redirect("/login?next=/dashboard/notifications");const {error}=await supabase.from("notifications").update({read_at:new Date().toISOString()}).eq("id",id).eq("user_id",String(claims.claims.sub));if(error)throw new Error(error.message);redirect("/dashboard/notifications");}
+export async function saveNotificationPreferences(formData:FormData){const supabase=await createClient();const {data:claims}=await supabase.auth.getClaims();if(!claims?.claims?.sub)redirect("/login?next=/dashboard/notifications/preferences");const userId=String(claims.claims.sub);const {error}=await supabase.from("notification_preferences").upsert({user_id:userId,in_app:formData.get("in_app")==="on",email:formData.get("email")==="on",sms:formData.get("sms")==="on",push:formData.get("push")==="on"},{onConflict:"user_id"});if(error)throw new Error(error.message);redirect("/dashboard/notifications/preferences");}

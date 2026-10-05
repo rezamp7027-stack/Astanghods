@@ -44,6 +44,7 @@ export function RegistrationButton({
     const { data: claimsData } = await supabase.auth.getClaims();
     if (!claimsData?.claims?.sub) {
       router.push(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      setLoading(false);
       return;
     }
 
@@ -64,6 +65,7 @@ export function RegistrationButton({
         ? `ظرفیت تکمیل است. شما در صف انتظار جایگاه ${result?.waitlist_position ?? "ثبت‌نشده"} قرار گرفتید.`
         : "ثبت‌نام با موفقیت انجام شد و این برنامه به مسیر شما اضافه شد.",
     );
+    router.refresh();
   }
 
   async function cancel() {
@@ -86,6 +88,7 @@ export function RegistrationButton({
 
     setStatus("cancelled");
     setMessage("ثبت‌نام شما لغو شد.");
+    router.refresh();
   }
 
   const cancellable = status !== null && ["pending", "confirmed", "waitlisted"].includes(status);
@@ -93,13 +96,11 @@ export function RegistrationButton({
   if (status && status !== "cancelled") {
     return (
       <div className="form-stack">
-        <div className="notice">
-          وضعیت ثبت‌نام: <strong>{statusLabels[status] ?? status}</strong>
-        </div>
+        <div className="notice">وضعیت ثبت‌نام: <strong>{statusLabels[status] ?? status}</strong></div>
         {cancellable && <button className="btn btn-secondary" onClick={cancel} disabled={loading} type="button">
           {loading ? "در حال پردازش…" : "لغو ثبت‌نام"}
         </button>}
-        {message && <div className={isError ? "notice error" : "notice"} role="status">{message}</div>}
+        {message && <div className={isError ? "notice error" : "notice"} role="status" aria-live="polite">{message}</div>}
       </div>
     );
   }

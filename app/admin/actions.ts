@@ -89,3 +89,23 @@ export async function dispatchNotifications() {
  const { supabase } = await requireRole(["super_admin","crm_manager"]);
  const {error}=await supabase.functions.invoke("dispatch-notifications",{body:{limit:50}});if(error)throw new Error(error.message);redirect("/admin/notifications");
 }
+
+export async function createVolunteerOpportunity(formData: FormData) {
+ const { supabase, userId } = await requireRole(["super_admin","regional_manager","crm_manager"]);
+ const title=v(formData,"title"), slug=v(formData,"slug").toLowerCase(), status=v(formData,"status")||"draft";
+ if(!title||!/^[a-z0-9-]+$/.test(slug)||!["draft","published","closed","completed"].includes(status)) throw new Error("invalid_volunteer_opportunity");
+ const skills=v(formData,"skills").split(",").map(x=>x.trim()).filter(Boolean).slice(0,20);
+ const {data,error}=await supabase.from("volunteer_opportunities").insert({title,slug,status,summary:v(formData,"summary")||null,description:v(formData,"description")||null,skills,city:v(formData,"city")||null,starts_at:d(formData,"starts_at"),ends_at:d(formData,"ends_at"),capacity:n(formData,"capacity"),created_by:userId}).select("id").single();
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"volunteer.opportunity.create",entity_type:"volunteer_opportunity",entity_id:data.id,metadata:{title,slug}});
+ redirect("/admin/volunteer");
+}
+export async function updateVolunteerAssignment(formData: FormData) {
+ const {supabase,userId}=await requireRole(["super_admin","regional_manager","crm_manager"]);
+ const id=v(formData,"assignment_id"),status=v(formData,"status");
+ if(!id||!["applied","selected","confirmed","cancelled","completed"].includes(status))throw new Error("invalid_volunteer_assignment");
+ const {data,error}=await supabase.from("volunteer_assignments").update({status,confirmed_at:status==="confirmed"?new Date().toISOString():null,completed_at:status==="completed"?new Date().toISOString():null}).eq("id",id).select("opportunity_id,user_id,status").single();
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"volunteer.assignment.update",entity_type:"volunteer_assignment",entity_id:id,metadata:{opportunity_id:data.opportunity_id,user_id:data.user_id,status}});
+ redirect("/admin/volunteer");
+}

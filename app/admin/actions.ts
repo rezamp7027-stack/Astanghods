@@ -109,3 +109,24 @@ export async function updateVolunteerAssignment(formData: FormData) {
  await supabase.from("audit_logs").insert({actor_user_id:userId,action:"volunteer.assignment.update",entity_type:"volunteer_assignment",entity_id:id,metadata:{opportunity_id:data.opportunity_id,user_id:data.user_id,status}});
  redirect("/admin/volunteer");
 }
+export async function createCourse(formData:FormData){
+ const {supabase,userId}=await requireRole(["super_admin","content_manager","program_manager"]);
+ const title=v(formData,"title"),slug=v(formData,"slug").toLowerCase();
+ if(!title||!/^[a-z0-9-]+$/.test(slug))throw new Error("invalid_course_payload");
+ const {data,error}=await supabase.from("courses").insert({title,slug,summary:v(formData,"summary")||null,description:v(formData,"description")||null,is_published:v(formData,"is_published")==="true",created_by:userId}).select("id").single();
+ if(error)throw new Error(error.message);
+ await supabase.from("audit_logs").insert({actor_user_id:userId,action:"course.create",entity_type:"course",entity_id:data.id,metadata:{title,slug}});
+ redirect("/admin/courses");
+}
+export async function createModule(formData:FormData){
+ const {supabase}=await requireRole(["super_admin","content_manager","program_manager"]);
+ const course_id=v(formData,"course_id"),title=v(formData,"title");if(!course_id||!title)throw new Error("invalid_module_payload");
+ const {error}=await supabase.from("course_modules").insert({course_id,title,sort_order:n(formData,"sort_order")??0});if(error)throw new Error(error.message);redirect("/admin/courses");
+}
+export async function createLesson(formData:FormData){
+ const {supabase}=await requireRole(["super_admin","content_manager","program_manager"]);
+ const module_id=v(formData,"module_id"),title=v(formData,"title"),slug=v(formData,"slug").toLowerCase();if(!module_id||!title||!/^[a-z0-9-]+$/.test(slug))throw new Error("invalid_lesson_payload");
+ let content:unknown={};const raw=v(formData,"content");if(raw){try{content=JSON.parse(raw);}catch{content={text:raw};}}
+ const {error}=await supabase.from("lessons").insert({module_id,title,slug,lesson_type:v(formData,"lesson_type")||"article",duration_minutes:n(formData,"duration_minutes"),sort_order:n(formData,"sort_order")??0,is_published:v(formData,"is_published")==="true",content:content as never});
+ if(error)throw new Error(error.message);redirect("/admin/courses");
+}
